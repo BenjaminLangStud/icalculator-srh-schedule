@@ -33,4 +33,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: my-app-build  # name of artifact
-        path: target/         # output path
+        path: target/*.jar         # output path
