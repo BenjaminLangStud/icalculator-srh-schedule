@@ -2,26 +2,26 @@ package com.benny.icalculation.application;
 
 
 import com.benny.icalculation.application.formatting.TxtFormatter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class TxtWriter {
+    private static final Logger log = LogManager.getLogger(TxtWriter.class);
+    static ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
     List<LectureEvent> lectureEventList;
     List<LectureEvent> lecturesToUse = new ArrayList<>();
     boolean ignorePastLectures;
     boolean ignoreOverlap;
     int monthMax;
-    static ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
 
     /**
      * @param lectureEventList The lectures for which to create the report
@@ -40,7 +40,15 @@ public class TxtWriter {
         this.ignoreOverlap = ignoreOverlap;
     }
 
-    public void prepare() {
+    /**
+     * @return True on success, false on failure
+     */
+    public boolean prepare() {
+
+        if (lectureEventList.isEmpty()) {
+            return false;
+        }
+
         final int biggestValidMonth = 12;
 
         if (monthMax < 1) {
@@ -54,7 +62,7 @@ public class TxtWriter {
                 this.lecturesToUse.add(lectureEvent);
         }
 
-        System.out.println(this.lecturesToUse);
+        return true;
     }
 
     /**
@@ -81,10 +89,17 @@ public class TxtWriter {
     public void writeToFile() { writeToFile(Config.outputFile); }
 
     public void writeToFile(String outFile) {
-        if (lecturesToUse == null) { prepare(); }
+        if (lecturesToUse.isEmpty()) {
+            if (!prepare()) {
+                log.error("There are no lectures to write to the output!");
+                return;
+            }
+        }
 
-        System.out.println("Lectures event:");
-        System.out.println(lecturesToUse);
+        int lecturesIgnored = this.lectureEventList.size() - this.lecturesToUse.size();
+        if (this.lectureEventList.size() > this.lecturesToUse.size()) {
+            log.info("{} lectures have been ignored.", lecturesIgnored);
+        }
 
         try (FileWriter writer = new FileWriter(outFile)) {
             String toWrite = TxtFormatter.formatEvents(lecturesToUse);
@@ -118,6 +133,19 @@ public class TxtWriter {
             return new MonthSelector(this);
         }
 
+        protected Builder stopAfterMonth(int month) {
+            this.monthMax = month;
+            return this;
+        }
+
+        //</editor-fold>
+
+        public Builder ignoreOverlap() { this.ignoreOverlap = true; return this; }
+
+        public TxtWriter build() {
+            return new TxtWriter(lectureEventList, ignorePastLectures, monthMax, ignoreOverlap);
+        }
+
         public static class MonthSelector {
             private final Builder builder;
 
@@ -135,20 +163,6 @@ public class TxtWriter {
             public Builder october() { return builder.stopAfterMonth(10); }
             public Builder november() { return builder.stopAfterMonth(11); }
             public Builder december() { return builder.stopAfterMonth(12); }
-        }
-
-        //</editor-fold>
-
-
-        protected Builder stopAfterMonth(int month) {
-            this.monthMax = month;
-            return this;
-        }
-
-        public Builder ignoreOverlap() { this.ignoreOverlap = true; return this; }
-
-        public TxtWriter build() {
-            return new TxtWriter(lectureEventList, ignorePastLectures, monthMax, ignoreOverlap);
         }
     }
 }

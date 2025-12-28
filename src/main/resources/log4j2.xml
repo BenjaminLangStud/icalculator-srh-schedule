@@ -14,7 +14,7 @@
     <!-- Define the loggers -->
     <Loggers>
         <!-- Root Logger -->
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="ConsoleAppender" />
             <AppenderRef ref="FileAppender" />
         </Root>
