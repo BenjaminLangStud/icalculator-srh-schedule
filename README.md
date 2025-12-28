@@ -1,4 +1,5 @@
-[![Java CI with Maven](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/maven.yml/badge.svg)](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/maven.yml)
+[![CI with maven](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/maven.yml/badge.svg)](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/maven.yml)
+[![Qodana](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/qodana_code_quality.yml/badge.svg)](https://github.com/BenjaminLangStud/icalculator-srh-schedule/actions/workflows/qodana_code_quality.yml)
 
 # icalculator
 
