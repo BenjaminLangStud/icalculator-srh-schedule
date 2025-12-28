@@ -35,7 +35,7 @@ class LectureEventTest {
     @Test
     @DisplayName("Format date")
     void formatDate() {
-        ZonedDateTime date = ZonedDateTime.of(2025, 12, 22, 11, 53, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime date = ZonedDateTime.of(2025, 12, 22, 11, 53, 0, 0, ZoneId.of("Europe/Berlin"));
 
         assertEquals("22.12.2025 11:53", LectureEvent.formatDate(date));
     }
