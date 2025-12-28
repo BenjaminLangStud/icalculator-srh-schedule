@@ -76,7 +76,6 @@ public class FileCacheService {
     private static String refreshCache() throws IOException, InterruptedException {
         ensureDirectoryExists();
         log.debug("Cache expired. Fetching fresh data...");
-        System.out.println("Cache expired. Fetching data...");
 
         String freshData = "";
         try {
