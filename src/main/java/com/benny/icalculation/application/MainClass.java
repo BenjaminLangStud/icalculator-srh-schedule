@@ -28,7 +28,7 @@ public class MainClass {
 
     static void main() throws IOException, InterruptedException, ParserException {
 
-        logger.info("hi");
+        logger.info("Startup");
 
         Config.loadConfig();
 

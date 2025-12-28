@@ -41,3 +41,4 @@ build/
 ### Project specific ###
 applogs/
 out.txt
+app.config

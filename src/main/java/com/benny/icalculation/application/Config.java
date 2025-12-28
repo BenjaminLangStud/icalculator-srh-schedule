@@ -44,10 +44,11 @@ public class Config {
                 "data.force_update", "false"
         ).equals("true");
 
-//        Runtime.getRuntime().addShutdownHook(new Thread(Config::saveConfig));
+        Runtime.getRuntime().addShutdownHook(new Thread(Config::saveConfig));
     }
 
     static void saveConfig() {
+        log.info("Saving config");
         try (FileOutputStream fos = new FileOutputStream("app.config", false)) {
             properties.store(fos, null);
         } catch (IOException fnex) {
