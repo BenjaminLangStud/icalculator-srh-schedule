@@ -4,15 +4,24 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Observable;
 import java.util.Properties;
 
 public class Config {
 
     private static final Logger log = LogManager.getLogger(Config.class);
-    public static String iCal_url = "";
+
+    public static String getICalUrl() {
+        return iCalUrl;
+    }
+
+    public static void setICalUrl(String iCal_url) {
+        Config.iCalUrl = iCal_url;
+    }
+
+    static String iCalUrl = "";
     public static String outputFile = "out.txt";
 
     static boolean force_fetch = false;
@@ -29,7 +38,7 @@ public class Config {
         return INVALIDATE_CACHE_AFTER_SECONDS;
     }
 
-    static void loadConfig() {
+    public static void loadConfig() {
         properties = new Properties();
 
         try (FileInputStream fis = new FileInputStream("app.config")) {
@@ -38,7 +47,7 @@ public class Config {
             log.error(fnfe.getMessage());
         }
 
-        Config.iCal_url = Config.getAndPerhapsAlsoSetProperty("data.ICAL_URL", "");
+        Config.setICalUrl(Config.getAndPerhapsAlsoSetProperty("data.ICAL_URL", ""));
 
         Config.force_fetch = Config.getAndPerhapsAlsoSetProperty(
                 "data.force_update", "false"

@@ -1,0 +1,13 @@
+
+.root {
+    -fx-font-size: 14pt;
+    -fx-font-family: "JetBrains Mono";
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.box-for-buttons > .label {
+    -fx-padding: 0 5 0 0;
+}

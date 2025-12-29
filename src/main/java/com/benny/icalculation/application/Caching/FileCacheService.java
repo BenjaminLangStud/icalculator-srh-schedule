@@ -59,13 +59,17 @@ public class FileCacheService {
      */
     public static String getData() throws IOException, InterruptedException {
         if (cacheFile.exists()) {
-            CachedResponse cachedResponse;
+            CachedResponse cachedResponse = new CachedResponse();
+            boolean success = true;
             try (FileInputStream inputStream = new FileInputStream(cacheFile)) {
                 byte[] bytes = inputStream.readAllBytes();
                 cachedResponse = deserialize(bytes);
+            } catch (FileNotFoundException fileNotFoundException) {
+                log.error(fileNotFoundException.getMessage());
+                success = false;
             }
 
-            if (cachedResponse.timestamp > Instant.now().getEpochSecond() + Config.getInvalidateCacheAfterSeconds()) {
+            if (success && cachedResponse.timestamp > Instant.now().getEpochSecond() + Config.getInvalidateCacheAfterSeconds()) {
                 return cachedResponse.content;
             }
         }
@@ -81,14 +85,11 @@ public class FileCacheService {
         try {
             freshData = FileDownloader.getIcal();
         } catch (ConfigIncompleteException configIncompleteException) {
-//            System.out.println("  !!! Configuration incomplete! Please update it. !!!");
             log.warn(configIncompleteException.getMessage());
-//            System.out.println(configIncompleteException.getMessage());
-            System.exit(99);
+            throw new RuntimeException(configIncompleteException.getMessage());
         }
 
         CachedResponse newCache = new CachedResponse(freshData);
-//        mapper.writeValue(cacheFile, newCache);
 
         byte[] bytes = serialize(newCache);
         try (FileOutputStream fileInputStream = new FileOutputStream(cacheFile)) {

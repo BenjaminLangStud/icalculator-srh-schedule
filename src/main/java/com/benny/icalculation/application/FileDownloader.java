@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 public class FileDownloader {
 
     public static String getIcal() throws IOException, InterruptedException {
-        return getIcal(Config.iCal_url);
+        return getIcal(Config.iCalUrl);
     }
     public static String getIcal(String url) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();

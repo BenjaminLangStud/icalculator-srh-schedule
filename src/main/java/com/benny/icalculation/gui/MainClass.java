@@ -1,0 +1,36 @@
+package com.benny.icalculation.gui;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Objects;
+
+public class MainClass extends Application {
+
+
+    private static final Logger log = LogManager.getLogger(MainClass.class);
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+
+        FXMLLoader fxmlLoader = new FXMLLoader(MainClass.class.getResource("mainScene.fxml"));
+
+        final int sceneWidth = 900;
+        final int sceneHeight = 700;
+        Scene scene = new Scene(fxmlLoader.load(), sceneWidth, sceneHeight);
+
+        primaryStage.setTitle("iCalculator GUI");
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(MainClass.class.getResourceAsStream("calculator-solid.png"))));
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+}

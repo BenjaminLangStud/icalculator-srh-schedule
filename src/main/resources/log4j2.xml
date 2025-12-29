@@ -7,9 +7,14 @@
             <PatternLayout pattern="%d{HH:mm:ss} %-5level %logger{15} - %msg%n" />
         </Console>
         <!-- File Appender -->
-        <File name="FileAppender" fileName="applogs/application_logs.log">
+        <File name="ApplicationFileAppender" fileName="applogs/application_logs.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
         </File>
+        <File name="GUIFileAppender" fileName="applogs/gui_logs.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+        </File>
+
+
         <RollingFile name="RollingAppender"
                         fileName="applogs/everything.log"
                         filePattern="applogs/everything-%i.log.gz">
@@ -27,9 +32,13 @@
             <AppenderRef ref="RollingAppender" />
         </Root>
 
-        <Logger name="com.benny.icalculation" level="debug" additivity="false">
+        <Logger name="com.benny.icalculation.application" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
-            <AppenderRef ref="FileAppender" />
+            <AppenderRef ref="ApplicationFileAppender" />
+        </Logger>
+        <Logger name="com.benny.icalculation.gui" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="GUIFileAppender" />
         </Logger>
     </Loggers>
 </Configuration>
