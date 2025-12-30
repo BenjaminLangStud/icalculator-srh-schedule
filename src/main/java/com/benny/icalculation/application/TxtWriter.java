@@ -18,7 +18,7 @@ public class TxtWriter {
     private static final Logger log = LogManager.getLogger(TxtWriter.class);
     static ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
     List<LectureEvent> lectureEventList;
-    List<LectureEvent> lecturesToUse = new ArrayList<>();
+    public List<LectureEvent> lecturesToUse = new ArrayList<>();
     boolean ignorePastLectures;
     boolean ignoreOverlap;
     int monthMax;

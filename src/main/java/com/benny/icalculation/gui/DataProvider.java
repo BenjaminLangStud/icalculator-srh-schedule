@@ -2,6 +2,7 @@ package com.benny.icalculation.gui;
 
 import com.benny.icalculation.application.LectureEvent;
 import com.benny.icalculation.application.MainClass;
+import com.benny.icalculation.application.TxtWriter;
 import com.benny.icalculation.application.formatting.TxtFormatter;
 import javafx.beans.value.ObservableStringValue;
 import javafx.concurrent.Service;
@@ -38,7 +39,10 @@ public class DataProvider extends Service<String> {
                     List<LectureEvent> lectureEvents = MainClass.loadFromICal();
                     Collections.sort(lectureEvents);
 
-                    formatted = TxtFormatter.formatEvents(lectureEvents);
+
+                    TxtWriter writer = new TxtWriter(lectureEvents, ignorePast, stopAfterMonth, true);
+                    writer.prepare();
+                    formatted = TxtFormatter.formatEvents(writer.lecturesToUse);
                 } catch (ParserException | IOException | InterruptedException e) {
                     formatted = "";
                     updateMessage("Error!");

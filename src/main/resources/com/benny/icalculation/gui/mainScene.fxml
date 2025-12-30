@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@application.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.benny.icalculation.gui.MainSceneController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" stylesheets="@application.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.benny.icalculation.gui.MainSceneController">
    <left>
       <VBox>
          <padding>
@@ -44,55 +44,34 @@
          <center>
             <ScrollPane focusTraversable="false" BorderPane.alignment="CENTER_LEFT">
                <content>
-                  <FlowPane fx:id="mainBody" hgap="5.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="200.0" vgap="5.0">
+                     <GridPane alignment="CENTER">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
                      <children>
-                        <HBox alignment="CENTER_LEFT" styleClass="box-for-buttons">
-                           <children>
-                              <Label style="-fx-padding: 0 5 0 0;" text="URL Input">
+                        <Label text="Stop after month" GridPane.rowIndex="1" />
+                        <ChoiceBox fx:id="monthChoiceBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="Ignore Past" GridPane.rowIndex="2" />
+                        <CheckBox fx:id="ignorePastCheckBox" alignment="CENTER" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="Output type" GridPane.rowIndex="3" />
+                        <Label style="-fx-padding: 0 5 0 0;" text="URL Input">
             </Label>
-                              <TextField fx:id="urlInput" promptText="URL" />
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="20.0" styleClass="box-for-buttons">
+                        <TextField fx:id="urlInput" promptText="URL" GridPane.columnIndex="1" />
+                        <VBox GridPane.columnIndex="1" GridPane.rowIndex="3">
                            <children>
-                              <Label text="Stop after month">
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </Label>
-                              <ChoiceBox fx:id="monthChoiceBox" prefWidth="150.0" />
+                              <RadioButton fx:id="radioButtonCopyClipboard" mnemonicParsing="false" text="Copy to clipboard" />
+                              <RadioButton fx:id="radioButtonSaveFile" mnemonicParsing="false" text="Save to file" />
                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="20.0" styleClass="box-for-buttons">
-                           <children>
-                              <Label text="Ignore Past">
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </Label>
-                              <CheckBox fx:id="ignorePastCheckBox" alignment="CENTER" mnemonicParsing="false" selected="true" />
-                           </children>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="106.0" styleClass="box-for-buttons">
-                           <children>
-                              <Label text="Output type">
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </Label>
-                              <VBox>
-                                 <children>
-                                    <RadioButton fx:id="radioButtonCopyClipboard" mnemonicParsing="false" text="Copy to clipboard" />
-                                    <RadioButton fx:id="radioButtonSaveFile" mnemonicParsing="false" text="Save to file" />
-                                 </children>
-                              </VBox>
-                           </children>
-                        </HBox>
+                        </VBox>
                      </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </FlowPane>
+                  </GridPane>
                </content>
             </ScrollPane>
          </center>
