@@ -24,8 +24,8 @@ public class MainClass extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainClass.class.getResource("mainScene.fxml"));
 
-        final int sceneWidth = 900;
-        final int sceneHeight = 700;
+        final int sceneWidth = 600;
+        final int sceneHeight = 400;
         Scene scene = new Scene(fxmlLoader.load(), sceneWidth, sceneHeight);
 
         primaryStage.setTitle("iCalculator GUI");
