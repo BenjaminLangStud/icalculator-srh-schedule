@@ -16,8 +16,8 @@
 
 
         <RollingFile name="RollingAppender"
-                        fileName="applogs/everything.log"
-                        filePattern="applogs/everything-%i.log.gz">
+                        fileName="${sys:user.home}/.srh-schedule-ical-app/applogs/everything.log"
+                        filePattern="${sys:user.home}/.srh-schedule-ical-app/applogs/everything-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
 
             <Policies>
