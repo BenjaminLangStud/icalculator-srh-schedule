@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
+    <Properties>
+        <Property name="basePath">${sys:user.home}/.srh-schedule-ical-app/applogs</Property>
+    </Properties>
     <!-- Define the appenders -->
     <Appenders>
         <!-- Console Appender -->
@@ -7,17 +10,17 @@
             <PatternLayout pattern="%d{HH:mm:ss} %-5level %logger{15} - %msg%n" />
         </Console>
         <!-- File Appender -->
-        <File name="ApplicationFileAppender" fileName="${sys:user.home}/.srh-schedule-ical-app/applogs/application_logs.log">
+        <File name="ApplicationFileAppender" fileName="${basePath}/application_logs.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
         </File>
-        <File name="GUIFileAppender" fileName="${sys:user.home}/.srh-schedule-ical-app/applogs/gui_logs.log">
+        <File name="GUIFileAppender" fileName="${basePath}/gui_logs.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
         </File>
 
 
         <RollingFile name="RollingAppender"
-                        fileName="applogs/everything.log"
-                        filePattern="applogs/everything-%i.log.gz">
+                        fileName="${basePath}/everything.log"
+                        filePattern="${basePath}/everything-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
 
             <Policies>

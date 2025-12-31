@@ -1,6 +1,7 @@
 package com.benny.icalculation.application;
 
 import com.benny.icalculation.application.Caching.FileCacheService;
+import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import com.benny.icalculation.application.formatting.TxtFormatter;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -32,7 +33,14 @@ public class MainClass {
 
         Config.loadConfig();
 
-        List<LectureEvent> lectureEvents = loadFromICal();
+        List<LectureEvent> lectureEvents;
+        try {
+            lectureEvents = loadFromICal();
+        } catch (ConfigIncompleteException configIncompleteException) {
+            logger.error(configIncompleteException.getMessage());
+            System.out.println("Please configure the URL to the ical.");
+            return;
+        }
 
         Collections.sort(lectureEvents);
 

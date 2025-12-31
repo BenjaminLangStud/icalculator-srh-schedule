@@ -7,6 +7,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,23 +19,7 @@ import java.time.Instant;
 public class FileCacheService {
     private static final Logger log = LogManager.getLogger(FileCacheService.class);
 
-    private static final String userHome = System.getProperty("user.home");
-
-    private static final String appFolderName = ".srh-schedule-ical-app";
-
-    private static final Path appDataDirectory = Paths.get(userHome, appFolderName);
-
-    private static final File cacheFile = appDataDirectory.resolve("data_cache.srh-schedule").toFile();
-
-    public static Path getAppDataDirectory() {
-        return appDataDirectory;
-    }
-
-    private static void ensureDirectoryExists() throws IOException {
-        if (Files.notExists(appDataDirectory)) {
-            Files.createDirectories(appDataDirectory);
-        }
-    }
+    private static final File cacheFile = Config.getAppDataDirectory().resolve("data_cache.srh-schedule").toFile();
 
     static CachedResponse deserialize(byte[] bytes) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
@@ -63,6 +50,7 @@ public class FileCacheService {
      */
     public static String getData() throws IOException, InterruptedException {
         if (cacheFile.exists()) {
+            log.info("CacheFile exists");
             CachedResponse cachedResponse = new CachedResponse();
             boolean success = true;
             try (FileInputStream inputStream = new FileInputStream(cacheFile)) {
@@ -73,24 +61,39 @@ public class FileCacheService {
                 success = false;
             }
 
-            if (success && cachedResponse.timestamp > Instant.now().getEpochSecond() + Config.getInvalidateCacheAfterSeconds()) {
+            if (success && !isCacheExpired(cachedResponse.timestamp)) {
+                log.info("Loading from cache...");
                 return cachedResponse.content;
             }
+        } else {
+            log.info("CacheFile doesn't exist");
         }
 
         return refreshCache();
     }
 
-    private static String refreshCache() throws IOException, InterruptedException {
-        ensureDirectoryExists();
+    static boolean isCacheExpired(long timestamp) {
+        long invalidateAfterSeconds = Config.getInvalidateCacheAfterSeconds();
+        long expiryTimestamp = timestamp + invalidateAfterSeconds;
+        return Instant.now().getEpochSecond() > expiryTimestamp;
+    }
+
+    private static String refreshCache() throws IOException, InterruptedException, IllegalArgumentException {
+        URL url = Config.getICalUri().toURL();
+        return refreshCache(url);
+    }
+    private static String refreshCache(URL icalURL) throws IOException, InterruptedException {
         log.debug("Cache expired. Fetching fresh data...");
 
         String freshData = "";
         try {
-            freshData = FileDownloader.getIcal();
+            freshData = FileDownloader.getIcal(icalURL);
         } catch (ConfigIncompleteException configIncompleteException) {
             log.warn(configIncompleteException.getMessage());
             throw new RuntimeException(configIncompleteException.getMessage());
+        } catch (URISyntaxException e) {
+            log.warn(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         CachedResponse newCache = new CachedResponse(freshData);
