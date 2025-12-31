@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -30,10 +31,13 @@
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label text="iCalculator GUI">
+                  <Label onMouseClicked="#OnClickTitleListener" text="iCalculator GUI">
                      <font>
                         <Font name="JetBrains Mono Regular" size="36.0" />
-                     </font></Label>
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></Label>
                </children>
             </HBox>
          </children>
@@ -82,7 +86,10 @@
                </BorderPane.margin>
                <children>
                   <Button fx:id="generateTextBtn" mnemonicParsing="false" onAction="#generateTextBtnListener" text="Generate Text" />
-                  <Label fx:id="generateTextLabel" layoutX="170.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Label fx:id="generateTextLabel" layoutX="170.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <padding>
+                        <Insets left="20.0" />
+                     </padding></Label>
                </children>
             </AnchorPane>
          </bottom>

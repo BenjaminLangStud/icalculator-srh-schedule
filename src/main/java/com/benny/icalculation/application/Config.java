@@ -1,11 +1,13 @@
 package com.benny.icalculation.application;
 
+import com.benny.icalculation.application.Caching.FileCacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Observable;
 import java.util.Properties;
 
@@ -22,6 +24,7 @@ public class Config {
     }
 
     static String iCalUrl = "";
+    static Path configFile = FileCacheService.getAppDataDirectory().resolve("app.config");
     public static String outputFile = "out.txt";
 
     static boolean force_fetch = false;
@@ -41,7 +44,7 @@ public class Config {
     public static void loadConfig() {
         properties = new Properties();
 
-        try (FileInputStream fis = new FileInputStream("app.config")) {
+        try (FileInputStream fis = new FileInputStream(configFile.toString())) {
             properties.load(fis);
         } catch (IOException fnfe) {
             log.error(fnfe.getMessage());
@@ -58,7 +61,7 @@ public class Config {
 
     static void saveConfig() {
         log.info("Saving config");
-        try (FileOutputStream fos = new FileOutputStream("app.config", false)) {
+        try (FileOutputStream fos = new FileOutputStream(configFile.toString(), false)) {
             properties.store(fos, null);
         } catch (IOException fnex) {
             System.err.println(fnex.getMessage());

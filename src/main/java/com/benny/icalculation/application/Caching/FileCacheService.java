@@ -20,13 +20,17 @@ public class FileCacheService {
 
     private static final String appFolderName = ".srh-schedule-ical-app";
 
-    private static final Path cacheDirectory = Paths.get(userHome, appFolderName);
+    private static final Path appDataDirectory = Paths.get(userHome, appFolderName);
 
-    private static final File cacheFile = cacheDirectory.resolve("data_cache.srh-schedule").toFile();
+    private static final File cacheFile = appDataDirectory.resolve("data_cache.srh-schedule").toFile();
+
+    public static Path getAppDataDirectory() {
+        return appDataDirectory;
+    }
 
     private static void ensureDirectoryExists() throws IOException {
-        if (Files.notExists(cacheDirectory)) {
-            Files.createDirectories(cacheDirectory);
+        if (Files.notExists(appDataDirectory)) {
+            Files.createDirectories(appDataDirectory);
         }
     }
 

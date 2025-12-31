@@ -1,5 +1,6 @@
 package com.benny.icalculation.gui;
 
+import com.benny.icalculation.application.Caching.FileCacheService;
 import com.benny.icalculation.application.Config;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -58,9 +59,6 @@ public class MainSceneController {
     private ChoiceBox<String> monthChoiceBox;
 
     @FXML
-    private FlowPane mainBody;
-
-    @FXML
     private Label loadIcalFeedbackText;
 
     @FXML
@@ -89,6 +87,19 @@ public class MainSceneController {
                 return;
             }
             Config.setICalUrl(url.toString());
+        }
+    }
+
+    @FXML
+    private void OnClickTitleListener() {
+        ProcessBuilder builder = new ProcessBuilder(
+                "explorer.exe", FileCacheService.getAppDataDirectory().toString()
+        );
+        builder.redirectErrorStream(true);
+        try {
+            Process _ = builder.start();
+        } catch (IOException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -251,8 +262,6 @@ public class MainSceneController {
         radioButtonCopyClipboard.setUserData(outputTypes.copyToClipboard);
 
         outputToggleGroup.selectedToggleProperty().addListener((observable, oldVal, newVal) -> log.info("{} was selected", newVal));
-
-        Platform.runLater(() -> mainBody.requestFocus());
 
         monthChoiceBox.getItems().addAll("-- NONE --", "January", "February", "March", "April", "May", "June", "July", "August", "September","October", "November", "December");
         monthChoiceBox.getSelectionModel().select(0);
