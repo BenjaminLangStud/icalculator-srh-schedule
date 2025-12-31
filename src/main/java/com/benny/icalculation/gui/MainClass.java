@@ -24,7 +24,7 @@ public class MainClass extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainClass.class.getResource("mainScene.fxml"));
 
-        final int sceneWidth = 600;
+        final int sceneWidth = 800;
         final int sceneHeight = 400;
         Scene scene = new Scene(fxmlLoader.load(), sceneWidth, sceneHeight);
 
