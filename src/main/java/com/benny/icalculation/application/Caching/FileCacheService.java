@@ -81,8 +81,17 @@ public class FileCacheService {
         return refreshCache();
     }
 
-    private static String refreshCache() throws IOException, InterruptedException {
-        ensureDirectoryExists();
+    static boolean isCacheExpired(long timestamp) {
+        long invalidateAfterSeconds = Config.getInvalidateCacheAfterSeconds();
+        long expiryTimestamp = timestamp + invalidateAfterSeconds;
+        return Instant.now().getEpochSecond() > expiryTimestamp;
+    }
+
+    private static String refreshCache() throws IOException, InterruptedException, IllegalArgumentException {
+        URL url = Config.getICalUri().toURL();
+        return refreshCache(url);
+    }
+    private static String refreshCache(URL icalURL) throws IOException, InterruptedException {
         log.debug("Cache expired. Fetching fresh data...");
 
         String freshData = "";
