@@ -47,7 +47,7 @@ public class MainClass {
      * Loads all LectureEvents from the ical
      * @return All LectureEvents, either from cache or freshly from the internet
      */
-    static List<LectureEvent> loadFromICal() throws ParserException, IOException, InterruptedException {
+    public static List<LectureEvent> loadFromICal() throws ParserException, IOException, InterruptedException {
         CalendarBuilder builder = new CalendarBuilder();
         String iCalData = FileCacheService.getData();
 
