@@ -297,11 +297,11 @@ public class MainSceneController {
         deselectKeys.add(KeyCode.ESCAPE);
         deselectKeys.add(KeyCode.ENTER);
 
-        control.setOnMouseClicked(event -> {
-            if (control.getBoundsInParent().contains(event.getX(), event.getY())) {
-                control.getParent().requestFocus();
-            }
-        });
+//        control.setOnMouseClicked(event -> {
+//            if (control.getBoundsInParent().contains(event.getX(), event.getY())) {
+//                control.getParent().requestFocus();
+//            }
+//        });
 
         control.setOnKeyPressed(event -> {
             if (deselectKeys.contains(event.getCode())) {
