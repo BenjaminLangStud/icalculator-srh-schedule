@@ -2,6 +2,7 @@ package com.benny.icalculation.gui;
 
 import com.benny.icalculation.application.Caching.FileCacheService;
 import com.benny.icalculation.application.Config;
+import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -13,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -71,7 +71,7 @@ public class MainSceneController {
     private RadioButton radioButtonSaveFile;
 
     void checkUIConfigs() {
-        if (!Objects.equals(Config.getICalUrl(), urlInput.getText())) {
+        if (!(Config.getICalUri().compareTo(URI.create(urlInput.getText())) == 0)) {
             if (urlInput.getText().isBlank()) return;
 
             log.info("A new URL has been provided via UI");
@@ -86,14 +86,14 @@ public class MainSceneController {
                 log.error("URL malformed");
                 return;
             }
-            Config.setICalUrl(url.toString());
+            Config.setICalUri(url.toString());
         }
     }
 
     @FXML
     private void OnClickTitleListener() {
         ProcessBuilder builder = new ProcessBuilder(
-                "explorer.exe", FileCacheService.getAppDataDirectory().toString()
+                "explorer.exe", Config.getAppDataDirectory().toString()
         );
         builder.redirectErrorStream(true);
         try {
@@ -198,8 +198,12 @@ public class MainSceneController {
 
         try {
             URL url = URI.create(urlInput.getText()).toURL();
+            Config.setForceFetch(true);
+            FileCacheService.getData();
         } catch (MalformedURLException e) {
             showLoadIcalFeedback("Malformed URL", true);
+        } catch (IOException | InterruptedException e) {
+            showLoadIcalFeedback("Something went wrong", true);
         }
 
         showLoadIcalFeedback("Success", false);
@@ -270,34 +274,42 @@ public class MainSceneController {
 
         urlInput.focusedProperty().addListener((arg0, oldValue, newValue) -> {
             if (newValue) return;
-            String inputtedText = urlInput.getText();
-
-            if (inputtedText.isEmpty()) {
-                urlInput.setStyle("-fx-text-fill: black;");
-                return;
-            }
-
-            boolean isValidURL = true;
-
-            try {
-                URI.create(inputtedText).toURL();
-            } catch (MalformedURLException | IllegalArgumentException e) {
-                isValidURL = false;
-            }
-
-            if (isValidURL) {
-                // input does not match the pattern
-                urlInput.setStyle("-fx-text-fill: black;");
-            } else {
-                urlInput.setStyle("-fx-text-fill: red;");
-            }
+            checkForURIInputValidity();
         });
 
-        String icalURL = Config.getICalUrl();
-        if (!icalURL.isBlank())
-            urlInput.setText(icalURL);
+        try {
+            URI icalURL = Config.getICalUri();
+            if (icalURL != null)
+                urlInput.setText(icalURL.toString());
+            checkForURIInputValidity();
+        } catch (ConfigIncompleteException e) {
+            log.error(e.getMessage());
+        }
 
         log.info("Initialized MainScene");
+    }
+
+    void checkForURIInputValidity() {
+        String inputtedText = urlInput.getText();
+
+        if (inputtedText.isEmpty()) {
+            urlInput.setStyle("-fx-text-fill: black;");
+            return;
+        }
+
+        boolean isValidURL = true;
+
+        try {
+            URI.create(inputtedText).toURL();
+        } catch (MalformedURLException | IllegalArgumentException e) {
+            isValidURL = false;
+        }
+
+        if (isValidURL) {
+            urlInput.setStyle("-fx-text-fill: green;");
+        } else {
+            urlInput.setStyle("-fx-text-fill: red;");
+        }
     }
 
     private void makeInputDeselectable(Control control) {

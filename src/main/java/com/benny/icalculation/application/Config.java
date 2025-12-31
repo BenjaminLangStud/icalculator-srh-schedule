@@ -1,40 +1,74 @@
 package com.benny.icalculation.application;
 
-import com.benny.icalculation.application.Caching.FileCacheService;
+import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Observable;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class Config {
 
     private static final Logger log = LogManager.getLogger(Config.class);
 
-    public static String getICalUrl() {
-        return iCalUrl;
+    private static final String userHome = System.getProperty("user.home");
+
+    private static final String appFolderName = ".srh-schedule-ical-app";
+
+    private static final Path appDataDirectory = Paths.get(userHome, appFolderName);
+
+    public static Path getAppDataDirectory() {
+        ensureDirectoryExists();
+        return appDataDirectory;
     }
 
-    public static void setICalUrl(String iCal_url) {
-        Config.iCalUrl = iCal_url;
+    private static void ensureDirectoryExists() {
+        if (Files.notExists(appDataDirectory)) {
+            try {
+                Files.createDirectories(appDataDirectory);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    static String iCalUrl = "";
-    static Path configFile = FileCacheService.getAppDataDirectory().resolve("app.config");
+    public static URI getICalUri() throws ConfigIncompleteException {
+        if (URI.create("").equals(iCalUri)) {
+            throw new ConfigIncompleteException("No URL has been provided!");
+        }
+        return iCalUri;
+    }
+
+    public static void setICalUri(String iCal_url) {
+        Config.iCalUri = URI.create(iCal_url);
+    }
+
+    static URI iCalUri;
+    static Path configFile = Config.getAppDataDirectory().resolve("app.config");
     public static String outputFile = "out.txt";
 
-    static boolean force_fetch = false;
+    static boolean forceFetch = false;
     static long INVALIDATE_CACHE_AFTER_SECONDS = 3600;
 
     static Properties properties;
 
+    public static boolean getForceFetch() {
+        return forceFetch;
+    }
+
+    public static void setForceFetch(boolean forceFetch) {
+        Config.forceFetch = forceFetch;
+    }
+
     public static long getInvalidateCacheAfterSeconds() {
-        if (force_fetch) {
-            force_fetch = false;
+        if (forceFetch) {
+            forceFetch = false;
             properties.setProperty("data.force_update", "false");
             return -5;
         }
@@ -50,9 +84,9 @@ public class Config {
             log.error(fnfe.getMessage());
         }
 
-        Config.setICalUrl(Config.getAndPerhapsAlsoSetProperty("data.ICAL_URL", ""));
+        Config.setICalUri(Config.getAndPerhapsAlsoSetProperty("data.ICAL_URL", ""));
 
-        Config.force_fetch = Config.getAndPerhapsAlsoSetProperty(
+        Config.forceFetch = Config.getAndPerhapsAlsoSetProperty(
                 "data.force_update", "false"
         ).equals("true");
 

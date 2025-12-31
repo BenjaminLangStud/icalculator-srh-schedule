@@ -1,6 +1,7 @@
 package com.benny.icalculation.application;
 
 import com.benny.icalculation.application.Caching.FileCacheService;
+import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import com.benny.icalculation.application.formatting.TxtFormatter;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
