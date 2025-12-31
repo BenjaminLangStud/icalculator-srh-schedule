@@ -32,7 +32,14 @@ public class MainClass {
 
         Config.loadConfig();
 
-        List<LectureEvent> lectureEvents = loadFromICal();
+        List<LectureEvent> lectureEvents;
+        try {
+            lectureEvents = loadFromICal();
+        } catch (ConfigIncompleteException configIncompleteException) {
+            logger.error(configIncompleteException.getMessage());
+            System.out.println("Please configure the URL to the ical.");
+            return;
+        }
 
         Collections.sort(lectureEvents);
 
