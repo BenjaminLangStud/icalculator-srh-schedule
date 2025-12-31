@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -140,6 +141,7 @@ public class MainSceneController {
 
             FileChooser fileChooser = new FileChooser();
             fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Text file", "txt"));
+            fileChooser.setInitialDirectory(Path.of(".").toFile());
             fileChooser.setTitle("Output file");
             File file = fileChooser.showSaveDialog(thisStage);
             if (file == null) {
