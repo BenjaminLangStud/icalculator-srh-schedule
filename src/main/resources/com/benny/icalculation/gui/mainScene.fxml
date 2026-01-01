@@ -64,7 +64,7 @@
                         <ChoiceBox fx:id="monthChoiceBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Label text="Ignore Past" GridPane.rowIndex="2">
                            <tooltip>
-                              <Tooltip text="If set, events that were in the past, will not be included in the output" />
+                              <Tooltip text="If set, events that were in the past will not be included in the output" />
                            </tooltip></Label>
                         <CheckBox fx:id="ignorePastCheckBox" alignment="CENTER" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         <Label text="Output type" GridPane.rowIndex="3" />
