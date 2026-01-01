@@ -58,7 +58,7 @@ public class TxtWriter {
         System.out.println(lectureEventList);
 
         for (LectureEvent lectureEvent : lectureEventList) {
-            if (prepareSingleEvent(lectureEvent) != null)
+            if (shouldLectureBeIncluded(lectureEvent))
                 this.lecturesToUse.add(lectureEvent);
         }
 
@@ -70,8 +70,8 @@ public class TxtWriter {
      * @param lectureEvent The lecture in question
      * @return the lectureEvent or null, if it should not be included
      */
-    private @Nullable LectureEvent prepareSingleEvent(LectureEvent lectureEvent) {
-        if (lectureEvent.startDate.getMonthValue() > monthMax) return null;
+    private boolean shouldLectureBeIncluded(LectureEvent lectureEvent) {
+        if (lectureEvent.startDate.getMonthValue() > monthMax) return false;
 
         boolean isOverlapping = false;
         boolean isFirstLecture = this.lectureEventList.isEmpty();
@@ -81,7 +81,7 @@ public class TxtWriter {
 
         if (ignoreOverlap && isOverlapping) {
             if (lecturesToUse.getLast().isLongerThan(lectureEvent)) {
-                return null;
+                return false;
             }
             this.lecturesToUse.removeLast();
         }
@@ -89,9 +89,9 @@ public class TxtWriter {
         ZonedDateTime startDate = lectureEvent.getStartDate();
 
         if (ignorePastLectures && startDate.isBefore(today))
-            return null;
+            return false;
 
-        return lectureEvent;
+        return true;
     }
 
     public void writeToFile() { writeToFile(Config.outputFile); }
