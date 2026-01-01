@@ -31,12 +31,12 @@
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label onMouseClicked="#OnClickTitleListener" text="iCalculator GUI">
+                  <Label text="iCalculator GUI">
                      <font>
                         <Font name="JetBrains Mono Regular" size="36.0" />
                      </font>
                      <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="DEFAULT" />
                      </cursor></Label>
                </children>
             </HBox>
@@ -84,20 +84,26 @@
                </content>
             </ScrollPane>
          </center>
-         <bottom>
-            <AnchorPane BorderPane.alignment="CENTER">
-               <BorderPane.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </BorderPane.margin>
-               <children>
-                  <Button fx:id="generateTextBtn" mnemonicParsing="false" onAction="#generateTextBtnListener" text="Generate Text" />
-                  <Label fx:id="generateTextLabel" layoutX="170.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <padding>
-                        <Insets left="20.0" />
-                     </padding></Label>
-               </children>
-            </AnchorPane>
-         </bottom>
       </BorderPane>
    </center>
+   <bottom>
+      <AnchorPane BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </BorderPane.margin>
+         <children>
+            <Button fx:id="generateTextBtn" mnemonicParsing="false" onAction="#generateTextBtnListener" text="Generate Text" />
+            <Label fx:id="generateTextLabel" layoutX="170.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+            </Label>
+            <Button mnemonicParsing="false" onAction="#onOpenDataFolderListener" text="Open data folder" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
+               <font>
+                  <Font name="JetBrains Mono Regular" size="12.0" />
+               </font>
+            </Button>
+         </children>
+      </AnchorPane>
+   </bottom>
 </BorderPane>

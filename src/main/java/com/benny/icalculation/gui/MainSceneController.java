@@ -6,7 +6,6 @@ import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -93,7 +92,7 @@ public class MainSceneController {
     }
 
     @FXML
-    private void OnClickTitleListener() {
+    private void onOpenDataFolderListener() {
         ProcessBuilder builder = new ProcessBuilder(
                 "explorer.exe", Config.getAppDataDirectory().toString()
         );
