@@ -11,3 +11,11 @@
 .box-for-buttons > .label {
     -fx-padding: 0 5 0 0;
 }
+
+#urlInput.valid {
+    -fx-text-fill: green;
+}
+
+#urlInput.invalid {
+    -fx-text-fill: red;
+}

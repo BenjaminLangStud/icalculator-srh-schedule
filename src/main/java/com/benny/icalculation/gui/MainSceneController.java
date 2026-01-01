@@ -6,6 +6,7 @@ import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -308,9 +309,11 @@ public class MainSceneController {
         }
 
         if (isValidURL) {
-            urlInput.setStyle("-fx-text-fill: green;");
+            urlInput.getStyleClass().add("valid");
+            urlInput.getStyleClass().remove("invalid");
         } else {
-            urlInput.setStyle("-fx-text-fill: red;");
+            urlInput.getStyleClass().add("invalid");
+            urlInput.getStyleClass().remove("valid");
         }
     }
 

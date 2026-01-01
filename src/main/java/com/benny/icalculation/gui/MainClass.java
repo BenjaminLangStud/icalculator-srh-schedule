@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +30,7 @@ public class MainClass extends Application {
         Scene scene = new Scene(fxmlLoader.load(), sceneWidth, sceneHeight);
 
         primaryStage.setTitle("iCalculator GUI");
-        primaryStage.getIcons().add(new Image(Objects.requireNonNull(MainClass.class.getResourceAsStream("calculator-solid.png"))));
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(MainClass.class.getResourceAsStream("assets/calculator-solid.png"))));
         primaryStage.setScene(scene);
         primaryStage.show();
     }
