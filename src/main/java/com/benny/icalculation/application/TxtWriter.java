@@ -73,15 +73,23 @@ public class TxtWriter {
     private @Nullable LectureEvent prepareSingleEvent(LectureEvent lectureEvent) {
         if (lectureEvent.startDate.getMonthValue() > monthMax) return null;
 
-        if (ignoreOverlap && this.lecturesToUse.size() > 1 && lectureEvent.isOverlapping(this.lecturesToUse.getLast())) {
-            if (lecturesToUse.getLast().getDuration().getSeconds() > lectureEvent.getDuration().getSeconds()) {
+        boolean isOverlapping = false;
+        boolean isFirstLecture = this.lectureEventList.isEmpty();
+        if (!isFirstLecture) {
+            isOverlapping = lectureEvent.isOverlapping(this.lecturesToUse.getLast());
+        }
+
+        if (ignoreOverlap && isOverlapping) {
+            if (lecturesToUse.getLast().isLongerThan(lectureEvent)) {
                 return null;
             }
             this.lecturesToUse.removeLast();
         }
 
         ZonedDateTime startDate = lectureEvent.getStartDate();
-        if (startDate.isBefore(today) && ignorePastLectures) return null;
+
+        if (ignorePastLectures && startDate.isBefore(today))
+            return null;
 
         return lectureEvent;
     }
