@@ -39,18 +39,24 @@ public class TxtWriter {
         this.ignoreOverlap = ignoreOverlap;
     }
 
-    /**
-     * @return True on success, false on failure
-     */
-    public boolean prepare() {
+    public TxtWriter() {
 
-        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures);
-
-        this.lecturesToUse = lectureSorter.sort();
-        return !this.lecturesToUse.isEmpty();
     }
 
+    /**
+     * @return True on success, false on failure
+     *
+     * @deprecated Use {@code  TxtWriter.prepare(LectureSorter sorter)} instead
+     */
+    public boolean prepare() {
+        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures);
+        return this.prepare(lectureSorter);
+    }
 
+    public boolean prepare(LectureSorter sorter) {
+        this.lecturesToUse = sorter.sort();
+        return !this.lecturesToUse.isEmpty();
+    }
 
     public void writeToFile() { writeToFile(Config.outputFile); }
 
