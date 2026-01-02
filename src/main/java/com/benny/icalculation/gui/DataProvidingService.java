@@ -3,6 +3,7 @@ package com.benny.icalculation.gui;
 import com.benny.icalculation.application.LectureEvent;
 import com.benny.icalculation.application.MainClass;
 import com.benny.icalculation.application.TxtWriter;
+import com.benny.icalculation.application.formatting.LectureSorter;
 import com.benny.icalculation.application.formatting.TxtFormatter;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -37,9 +38,15 @@ public class DataProvidingService extends Service<String> {
                     List<LectureEvent> lectureEvents = MainClass.loadFromICal();
                     Collections.sort(lectureEvents);
 
+                    LectureSorter sorter = new LectureSorter.Builder()
+                            .lectureEvents(lectureEvents)
+                            .stopAfterMonth(stopAfterMonth)
+                            .ignorePast(ignorePast)
+                            .ignoreOverlap(true)
+                            .build();
 
-                    TxtWriter writer = new TxtWriter(lectureEvents, ignorePast, stopAfterMonth, true);
-                    writer.prepare();
+                    TxtWriter writer = new TxtWriter();
+                    writer.prepare(sorter);
                     formatted = TxtFormatter.formatEvents(writer.lecturesToUse);
                 } catch (ParserException | IOException | InterruptedException e) {
                     formatted = "";
