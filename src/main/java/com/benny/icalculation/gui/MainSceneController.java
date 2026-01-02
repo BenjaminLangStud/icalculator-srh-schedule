@@ -1,10 +1,13 @@
 package com.benny.icalculation.gui;
 
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import com.benny.icalculation.application.Caching.FileCacheService;
 import com.benny.icalculation.application.Config;
 import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -70,6 +73,10 @@ public class MainSceneController {
 
     @FXML
     private RadioButton radioButtonSaveFile;
+
+    @FXML
+    private Button themeToggleButton;
+
 
     void checkUIConfigs() {
         if (!(Config.getICalUri().compareTo(URI.create(urlInput.getText())) == 0)) {
@@ -290,7 +297,26 @@ public class MainSceneController {
             log.error(e.getMessage());
         }
 
+        setupThemeToggle();
+
         log.info("Initialized MainScene");
+    }
+
+    void setupThemeToggle() {
+        String sunSymbol = "☼";
+        String moonSymbol = "☽";
+
+        themeToggleButton.setText(moonSymbol);
+
+        themeToggleButton.setOnAction(_ -> {
+            if (themeToggleButton.getText().equals(moonSymbol)) {
+                Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+                themeToggleButton.setText(sunSymbol);
+            } else {
+                Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+                themeToggleButton.setText(moonSymbol);
+            }
+        });
     }
 
     void checkForURIInputValidity() {

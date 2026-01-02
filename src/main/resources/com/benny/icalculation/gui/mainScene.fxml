@@ -27,21 +27,27 @@
       </VBox>
    </left>
    <top>
-      <VBox BorderPane.alignment="CENTER">
+      <AnchorPane BorderPane.alignment="CENTER">
          <children>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+            <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <Label text="iCalculator GUI">
-                     <font>
-                        <Font name="JetBrains Mono Regular" size="36.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="DEFAULT" />
-                     </cursor></Label>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <Label text="iCalculator GUI">
+                           <font>
+                              <Font name="JetBrains Mono Regular" size="36.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="DEFAULT" />
+                           </cursor>
+                        </Label>
+                     </children>
+                  </HBox>
                </children>
-            </HBox>
+            </VBox>
+            <Button fx:id="themeToggleButton" mnemonicParsing="false" text="☽" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
          </children>
-      </VBox>
+      </AnchorPane>
    </top>
    <center>
       <BorderPane BorderPane.alignment="CENTER">
