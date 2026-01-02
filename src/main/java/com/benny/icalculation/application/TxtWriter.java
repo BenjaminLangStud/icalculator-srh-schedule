@@ -1,10 +1,10 @@
 package com.benny.icalculation.application;
 
 
+import com.benny.icalculation.application.formatting.LectureSorter;
 import com.benny.icalculation.application.formatting.TxtFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import java.util.List;
 
 public class TxtWriter {
     private static final Logger log = LogManager.getLogger(TxtWriter.class);
-    static ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
     List<LectureEvent> lectureEventList;
     public List<LectureEvent> lecturesToUse = new ArrayList<>();
     boolean ignorePastLectures;
@@ -45,46 +44,13 @@ public class TxtWriter {
      */
     public boolean prepare() {
 
-        if (lectureEventList.isEmpty()) {
-            return false;
-        }
+        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures);
 
-        final int biggestValidMonth = 12;
-
-        if (monthMax < 1) {
-            monthMax = biggestValidMonth + 1;
-        }
-
-        System.out.println(lectureEventList);
-
-        for (LectureEvent lectureEvent : lectureEventList) {
-            if (prepareSingleEvent(lectureEvent) != null)
-                this.lecturesToUse.add(lectureEvent);
-        }
-
-        return true;
+        this.lecturesToUse = lectureSorter.sort();
+        return !this.lecturesToUse.isEmpty();
     }
 
-    /**
-     * Validates if a lectureEvent should be included in the output according to the flags set in this class
-     * @param lectureEvent The lecture in question
-     * @return the lectureEvent or null, if it should not be included
-     */
-    private @Nullable LectureEvent prepareSingleEvent(LectureEvent lectureEvent) {
-        if (lectureEvent.startDate.getMonthValue() > monthMax) return null;
 
-        if (ignoreOverlap && this.lecturesToUse.size() > 1 && lectureEvent.isOverlapping(this.lecturesToUse.getLast())) {
-            if (lecturesToUse.getLast().getDuration().getSeconds() > lectureEvent.getDuration().getSeconds()) {
-                return null;
-            }
-            this.lecturesToUse.removeLast();
-        }
-
-        ZonedDateTime startDate = lectureEvent.getStartDate();
-        if (startDate.isBefore(today) && ignorePastLectures) return null;
-
-        return lectureEvent;
-    }
 
     public void writeToFile() { writeToFile(Config.outputFile); }
 

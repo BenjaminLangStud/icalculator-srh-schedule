@@ -1,5 +1,6 @@
 package com.benny.icalculation.application;
 
+import com.benny.icalculation.application.Caching.CacheService;
 import com.benny.icalculation.application.Caching.FileCacheService;
 import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import com.benny.icalculation.application.formatting.TxtFormatter;
@@ -57,7 +58,8 @@ public class MainClass {
      */
     public static List<LectureEvent> loadFromICal() throws ParserException, IOException, InterruptedException {
         CalendarBuilder builder = new CalendarBuilder();
-        String iCalData = FileCacheService.getData();
+        CacheService cacheService = new FileCacheService();
+        String iCalData = cacheService.getData();
 
         Calendar calendar = builder.build(new StringReader(iCalData));
 

@@ -110,4 +110,8 @@ public class LectureEvent implements Comparable<LectureEvent> {
     public boolean isOverlapping(LectureEvent other) {
         return this.startDate.isBefore(other.getEndDate()) && startDate.isBefore(this.getEndDate());
     }
+
+    public boolean isLongerThan(LectureEvent other) {
+        return this.getDuration().compareTo(other.getDuration()) > 0;
+    }
 }

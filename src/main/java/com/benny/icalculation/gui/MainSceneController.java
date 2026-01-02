@@ -1,10 +1,13 @@
 package com.benny.icalculation.gui;
 
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import com.benny.icalculation.application.Caching.FileCacheService;
 import com.benny.icalculation.application.Config;
 import com.benny.icalculation.application.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -71,6 +74,10 @@ public class MainSceneController {
     @FXML
     private RadioButton radioButtonSaveFile;
 
+    @FXML
+    private Button themeToggleButton;
+
+
     void checkUIConfigs() {
         if (!(Config.getICalUri().compareTo(URI.create(urlInput.getText())) == 0)) {
             if (urlInput.getText().isBlank()) return;
@@ -116,7 +123,7 @@ public class MainSceneController {
 
         log.info("Setting up DataProvider with: stopAfterMonth: {} and ignorePast: {}", stopAfterMonth, ignorePast);
 
-        DataProvider service = new DataProvider(ignorePast, stopAfterMonth);
+        DataProvidingService service = new DataProvidingService(ignorePast, stopAfterMonth);
 
         generateTextLabel.textProperty().bind(service.messageProperty());
 
@@ -174,11 +181,13 @@ public class MainSceneController {
 
     void showConfirmDialog(String message, String submessage) {
         final Stage dialog = new Stage();
+        dialog.setTitle("Success!");
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(MainSceneController.class.getResource("confirmDialog.fxml")));
+            loader.setControllerFactory(_ -> new DialogController(message, submessage));
             Parent root = loader.load();
-            DialogController controller = loader.getController();
-            controller.setMessage(message, submessage);
+//            DialogController controller = loader.getController();
+//            controller.setMessage(message, submessage);
             Scene scene = new Scene(root, 300, 200);
             dialog.setScene(scene);
 
@@ -201,7 +210,7 @@ public class MainSceneController {
         try {
             URL url = URI.create(urlInput.getText()).toURL();
             Config.setForceFetch(true);
-            FileCacheService.getData();
+            new FileCacheService().getData();
         } catch (MalformedURLException e) {
             showLoadIcalFeedback("Malformed URL", true);
         } catch (IOException | InterruptedException e) {
@@ -288,7 +297,26 @@ public class MainSceneController {
             log.error(e.getMessage());
         }
 
+        setupThemeToggle();
+
         log.info("Initialized MainScene");
+    }
+
+    void setupThemeToggle() {
+        String sunSymbol = "☼";
+        String moonSymbol = "☽";
+
+        themeToggleButton.setText(moonSymbol);
+
+        themeToggleButton.setOnAction(_ -> {
+            if (themeToggleButton.getText().equals(moonSymbol)) {
+                Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+                themeToggleButton.setText(sunSymbol);
+            } else {
+                Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+                themeToggleButton.setText(moonSymbol);
+            }
+        });
     }
 
     void checkForURIInputValidity() {

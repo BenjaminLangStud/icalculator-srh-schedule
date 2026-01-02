@@ -4,7 +4,6 @@ import com.benny.icalculation.application.LectureEvent;
 import com.benny.icalculation.application.MainClass;
 import com.benny.icalculation.application.TxtWriter;
 import com.benny.icalculation.application.formatting.TxtFormatter;
-import javafx.beans.value.ObservableStringValue;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import net.fortuna.ical4j.data.ParserException;
@@ -12,17 +11,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
-public class DataProvider extends Service<String> {
-    private static final Logger log = LogManager.getLogger(DataProvider.class);
+public class DataProvidingService extends Service<String> {
+    private static final Logger log = LogManager.getLogger(DataProvidingService.class);
 
     boolean ignorePast = false;
     int stopAfterMonth = -5;
 
-    public DataProvider(boolean ignorePast, int stopAfterMonth) {
+    public DataProvidingService(boolean ignorePast, int stopAfterMonth) {
         this.ignorePast = ignorePast;
         this.stopAfterMonth = stopAfterMonth;
     }
