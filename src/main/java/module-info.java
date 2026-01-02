@@ -6,6 +6,7 @@ module icalCalculation.srh.schedule {
     requires javafx.graphics;
     requires org.apache.logging.log4j;
     requires org.jetbrains.annotations;
+    requires atlantafx.base;
 
     opens com.benny.icalculation.gui to javafx.fxml;
 
