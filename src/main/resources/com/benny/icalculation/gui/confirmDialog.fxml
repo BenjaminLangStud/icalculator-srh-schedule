@@ -2,39 +2,49 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
 <Pane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.benny.icalculation.gui.DialogController">
    <children>
-      <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0">
-         <top>
-            <FlowPane alignment="CENTER" BorderPane.alignment="CENTER">
-               <children>
-                  <VBox alignment="CENTER">
+      <AnchorPane>
+         <children>
+            <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0">
+               <top>
+                  <FlowPane alignment="CENTER" BorderPane.alignment="CENTER">
                      <children>
-                        <Label fx:id="messageLabel" alignment="CENTER" contentDisplay="CENTER" text="Label">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="subMessageLabel" text="Label" wrapText="true" />
+                        <VBox alignment="CENTER">
+                           <children>
+                              <Label fx:id="messageLabel" alignment="CENTER" contentDisplay="CENTER" text="Label">
+                                 <font>
+                                    <Font size="24.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="subMessageLabel" text="Label" wrapText="true" />
+                           </children>
+                        </VBox>
                      </children>
-                  </VBox>
-               </children>
-               <BorderPane.margin>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-               </BorderPane.margin>
-            </FlowPane>
-         </top>
-         <bottom>
-            <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="20.0" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-               <children>
-                  <Button defaultButton="true" mnemonicParsing="false" onAction="#okBtnHandler" text="OK" />
-                  <Button mnemonicParsing="false" onAction="#okBtnHandler" text="Also OK" />
-               </children>
-            </FlowPane>
-         </bottom>
-      </BorderPane>
+                     <BorderPane.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </BorderPane.margin>
+                  </FlowPane>
+               </top>
+               <bottom>
+                  <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="20.0" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Button defaultButton="true" mnemonicParsing="false" onAction="#okBtnHandler" text="OK" />
+                        <Button mnemonicParsing="false" onAction="#okBtnHandler" text="Also OK" />
+                     </children>
+                  </FlowPane>
+               </bottom>
+            </BorderPane>
+            <ImageView fx:id="cringeEmoji" blendMode="MULTIPLY" cache="true" cacheHint="SPEED" fitHeight="50.0" fitWidth="100.0" opacity="0.5" pickOnBounds="true" smooth="false" visible="false" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="75.0">
+               <image>
+                  <Image url="@assets/cringe_smiley.gif" />
+               </image>
+            </ImageView>
+         </children>
+      </AnchorPane>
    </children>
 </Pane>

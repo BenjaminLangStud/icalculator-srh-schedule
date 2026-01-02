@@ -3,16 +3,16 @@
     <Properties>
         <Property name="basePath">${sys:user.home}/.srh-schedule-ical-app/applogs</Property>
     </Properties>
-    <!-- Define the appenders -->
     <Appenders>
-        <!-- Console Appender -->
+
         <Console name="ConsoleAppender" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss} %-5level %logger{15} - %msg%n" />
         </Console>
-        <!-- File Appender -->
+
         <File name="ApplicationFileAppender" fileName="${basePath}/application_logs.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
         </File>
+
         <File name="GUIFileAppender" fileName="${basePath}/gui_logs.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
         </File>
@@ -28,9 +28,7 @@
             </Policies>
         </RollingFile>
     </Appenders>
-    <!-- Define the loggers -->
     <Loggers>
-        <!-- Root Logger -->
         <Root level="info">
             <AppenderRef ref="RollingAppender" />
         </Root>

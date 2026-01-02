@@ -6,9 +6,11 @@ import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 import java.util.Objects;
+import java.util.Random;
 
 public class DialogController {
     String message = "ERROR";
@@ -19,6 +21,20 @@ public class DialogController {
 
     @FXML
     Label subMessageLabel;
+
+    @FXML
+    ImageView cringeEmoji;
+
+    public DialogController() {
+        this(null, null);
+    }
+    public DialogController(String message, String subMessage) {
+        if (message != null)
+            this.message = message;
+
+        if (subMessage != null)
+            this.subMessage = subMessage;
+    }
 
     public  void setMessage(String message) {
         this.setMessage(message, null);
@@ -37,9 +53,20 @@ public class DialogController {
     @FXML
     private void initialize() {
         Platform.runLater(() -> {
+            if (shouldShowCringeEmoji()) {
+                cringeEmoji.setVisible(true);
+            }
             this.messageLabel.setText(message);
 
             this.subMessageLabel.setText(Objects.requireNonNullElse(subMessage, ""));
         });
+    }
+
+    boolean shouldShowCringeEmoji() {
+        Random random = new Random();
+        boolean firstCoinFlip = random.nextBoolean();
+        boolean secondCoinFlip = random.nextBoolean();
+
+        return firstCoinFlip && secondCoinFlip;
     }
 }

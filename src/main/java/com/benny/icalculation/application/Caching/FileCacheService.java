@@ -13,15 +13,16 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 
 
-public class FileCacheService {
+public class FileCacheService implements CacheService {
     private static final Logger log = LogManager.getLogger(FileCacheService.class);
 
-    private static final File cacheFile = Config.getAppDataDirectory().resolve("data_cache.srh-schedule").toFile();
+    private final File cacheFile = Config.getAppDataDirectory().resolve("data_cache.srh-schedule").toFile();
 
-    static CachedResponse deserialize(byte[] bytes) throws IOException {
+    CachedResponse deserialize(byte[] bytes) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 
         try (ObjectInput input = new ObjectInputStream(byteArrayInputStream)) {
@@ -31,7 +32,7 @@ public class FileCacheService {
         }
     }
 
-    static byte[] serialize(final CachedResponse cachedResponse) {
+    byte[] serialize(final CachedResponse cachedResponse) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
@@ -48,7 +49,7 @@ public class FileCacheService {
      * Gets either the cached Data or fetches it
      * @return The iCal data to use
      */
-    public static String getData() throws IOException, InterruptedException {
+    public String getData() throws IOException, InterruptedException {
         if (cacheFile.exists()) {
             log.info("CacheFile exists");
             CachedResponse cachedResponse = new CachedResponse();
@@ -72,17 +73,23 @@ public class FileCacheService {
         return refreshCache();
     }
 
-    static boolean isCacheExpired(long timestamp) {
+    boolean isCacheExpired(long timestamp) {
         long invalidateAfterSeconds = Config.getInvalidateCacheAfterSeconds();
         long expiryTimestamp = timestamp + invalidateAfterSeconds;
-        return Instant.now().getEpochSecond() > expiryTimestamp;
+        Duration expiredDuration = Duration.ofSeconds(Instant.now().getEpochSecond() - expiryTimestamp);
+        if (expiredDuration.getSeconds() > 0) {
+            log.debug("Cache expired for {} hours", expiredDuration.toHours());
+            return true;
+        }
+        log.debug("Cache remaining: {} hours", expiredDuration.toHours());
+        return false;
     }
 
-    private static String refreshCache() throws IOException, InterruptedException, IllegalArgumentException {
+    private String refreshCache() throws IOException, InterruptedException, IllegalArgumentException {
         URL url = Config.getICalUri().toURL();
         return refreshCache(url);
     }
-    private static String refreshCache(URL icalURL) throws IOException, InterruptedException {
+    private String refreshCache(URL icalURL) throws IOException, InterruptedException {
         log.debug("Cache expired. Fetching fresh data...");
 
         String freshData = "";
