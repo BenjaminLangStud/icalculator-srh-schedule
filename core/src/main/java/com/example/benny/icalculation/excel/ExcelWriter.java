@@ -4,12 +4,14 @@ package com.example.benny.icalculation.excel;
 import com.example.benny.icalculation.core.LectureEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,10 +27,24 @@ import java.util.stream.Stream;
 public class ExcelWriter {
     private static final Logger log = LogManager.getLogger(ExcelWriter.class);
 
-    public void appendToExcel(Path excelFile, List<LectureEvent> events) {
-        try (FileInputStream inputStream = new FileInputStream(excelFile.toFile())) {
+    static void main() {
+        File excelFile = new File("test.xlsx");
 
-            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+        ExcelWriter writer = new ExcelWriter();
+        List<LectureEvent> events  = new ArrayList<>();
+
+        ZonedDateTime now = ZonedDateTime.now();
+
+        events.add(new LectureEvent("ABC", now, now.plusHours(1)));
+        events.add(new LectureEvent("ABC", now.plusHours(2), now.plusHours(3)));
+
+        writer.appendToExcel(excelFile, events);
+    }
+
+    public void appendToExcel(File excelFile, List<LectureEvent> events) {
+        try (FileInputStream inputStream = new FileInputStream(excelFile)) {
+
+            XSSFWorkbook workbook = new XSSFWorkbook(excelFile);
 
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -51,10 +67,9 @@ public class ExcelWriter {
                 }
             }
 
+            log.info(lectureEventStack.size());
 
-
-
-        } catch (IOException e) {
+        } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
     }

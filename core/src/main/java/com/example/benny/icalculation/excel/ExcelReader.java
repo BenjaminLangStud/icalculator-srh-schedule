@@ -131,8 +131,10 @@ public class ExcelReader {
     private static int getIdOfLastRowWithData(String[][] data) {
         String[][] reversed = reverseArray(data);
         for (int i = 0; i < reversed.length; i++) {
-            HashSet<String> stringHashSet = new HashSet<>(Arrays.asList(reversed[i]));
-            if (stringHashSet.size() > 1) return Math.abs(i + 1);
+            String[] row = reversed[i];
+            if (row[0] == null || row[0].isEmpty()) {
+                return reversed.length - i;
+            }
         }
         return 0;
     }
