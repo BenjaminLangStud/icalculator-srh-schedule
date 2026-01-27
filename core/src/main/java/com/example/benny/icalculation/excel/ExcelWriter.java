@@ -5,72 +5,98 @@ import com.example.benny.icalculation.core.LectureEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalField;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.stream.Stream;
+import java.util.*;
 
 public class ExcelWriter {
     private static final Logger log = LogManager.getLogger(ExcelWriter.class);
 
-    static void main() {
-        File excelFile = new File("test.xlsx");
+    private XSSFWorkbook workbook;
+    private ExcelReader reader;
 
-        ExcelWriter writer = new ExcelWriter();
-        List<LectureEvent> events  = new ArrayList<>();
+    public ExcelWriter(File excelFile, List<LectureEvent> events) throws IOException, InvalidFormatException {
+        log.error("File Space: {}", excelFile.length());
+
+        log.info("Does file exist? {}", excelFile.exists());
+
+        this.workbook = null;
+        try (FileInputStream inputStream = new FileInputStream(excelFile.getPath())) {
+            int available = inputStream.available();
+            log.error("Available: {}", available);
+            this.workbook = new XSSFWorkbook(inputStream);
+        }
+        reader = new ExcelReader(workbook);
+    }
+
+    static void main() throws IOException, InvalidFormatException {
+        File excelFile = new File("test.xlsx");
+        Path excelPath = excelFile.toPath();
+        log.info(excelPath);
+
+        byte[] bytes = Files.readAllBytes(excelFile.toPath());
+
+        log.error(bytes.length);
+
+        List<LectureEvent> events = new ArrayList<>();
 
         ZonedDateTime now = ZonedDateTime.now();
 
         events.add(new LectureEvent("ABC", now, now.plusHours(1)));
         events.add(new LectureEvent("ABC", now.plusHours(2), now.plusHours(3)));
 
-        writer.appendToExcel(excelFile, events);
+        ExcelWriter writer = new ExcelWriter(excelFile, events);
+        writer.appendToExcel(events);
     }
 
-    public void appendToExcel(File excelFile, List<LectureEvent> events) {
-        try (FileInputStream inputStream = new FileInputStream(excelFile)) {
+    public void appendToExcel(List<LectureEvent> events) throws IOException {
+        XSSFSheet sheet = reader.getFirstSheet();
+        List<ExcelRow> rows = Arrays.stream(reader.getInefficientRows(sheet)).toList();
 
-            XSSFWorkbook workbook = new XSSFWorkbook(excelFile);
+        ExcelRow latestRow = rows.getLast();
+        LocalDate latestLocalDate = latestRow.date();
+        ZonedDateTime latestDate = latestLocalDate.atStartOfDay(ZoneId.of("Europe/Berlin"));
 
-            Sheet sheet = workbook.getSheetAt(0);
+        int nextRowId = latestRow.rowId() + 1;
 
-            ExcelReader reader = new ExcelReader(workbook);
+        CreationHelper creationHelper = workbook.getCreationHelper();
+        CellStyle dateStyle = workbook.createCellStyle();
 
-            TreeMap<ZonedDateTime, Row> dateMap = reader.getDateMap();
+        dateStyle.setDataFormat(
+                creationHelper.createDataFormat().getFormat("dd-mm-yyyy")
+        );
 
-            Stack<LectureEvent> lectureEventStack = new Stack<>();
+        for (LectureEvent event : events) {
+            ZonedDateTime  eventStartTime = event.getStartDate();
+            if (eventStartTime.isBefore(latestDate)) { continue; }
+            XSSFRow newRow = sheet.createRow(nextRowId);
 
-            int lastWeekOfYear = 0;
+            newRow.setRowStyle(reader.readRowStyleAt(nextRowId - 1, sheet));
 
-            for (LectureEvent lectureEvent : events) {
-                if (!dateMap.containsKey(lectureEvent.getStartDate())) {
-                    lectureEventStack.add(lectureEvent);
-                    int weekOfYear = lectureEvent.getStartDate().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+            XSSFCell dateCell = newRow.createCell(0);
 
-                    if (weekOfYear > lastWeekOfYear) {
-                        lectureEventStack.push(null);
-                    }
-                }
-            }
+            dateCell.setCellValue(event.getStartDate().toLocalDate());
 
-            log.info(lectureEventStack.size());
+            dateCell.setCellStyle(dateStyle);
 
-        } catch (IOException | InvalidFormatException e) {
-            throw new RuntimeException(e);
+            nextRowId++;
+        }
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream("test.xlsx")) {
+            workbook.write(fileOutputStream);
         }
     }
 }

@@ -3,15 +3,13 @@ package com.example.benny.icalculation.excel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -39,67 +37,77 @@ public class ExcelReader {
     }
 
     public void readExcel() {
-        XSSFSheet sheet = workbook.getSheetAt(0);
+        XSSFSheet sheet = getFirstSheet();
 
         log.info("Sheet: {}", sheet.getSheetName());
 
+        ExcelRow[] data = getInefficientRows(sheet);
+
+        for (ExcelRow row : data) {
+            System.out.println(row);
+        }
+    }
+
+    public ExcelRow[] getInefficientRows(XSSFSheet sheet) {
         int lastRowNum = getRealLastRowNum(sheet);
         int columns = sheet.getRow(0).getLastCellNum();
 
         System.out.println("Last Row num: " + lastRowNum);
 
-        String[][] data = new String[lastRowNum + 1][columns];
+        ExcelRow[] data = new ExcelRow[lastRowNum + 1];
+
+        Locale locale = Locale.GERMAN;
+
+        DataFormatter cellDataFormatter = new DataFormatter(locale);
+        DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("EEEE, d. MMMM yyyy", locale);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm", locale);
+
+        FormulaEvaluator formulaEvaluator = new XSSFFormulaEvaluator(workbook);
 
         sheet.rowIterator().forEachRemaining(row -> {
-            row.cellIterator().forEachRemaining(cell -> {
-                int rowIndex = cell.getRowIndex();
-                int columnIndex = cell.getColumnIndex();
-
-                DataFormatter dataFormatter = new DataFormatter(Locale.GERMAN);
-
-                switch (cell.getCellType()) {
-                    case CellType.STRING -> data[rowIndex][columnIndex] = cell.getRichStringCellValue().getString();
-                    case CellType.NUMERIC -> {
-                        if (DateUtil.isCellDateFormatted(cell)) {
-                            data[rowIndex][columnIndex] = dataFormatter.formatCellValue(cell);
-                        } else {
-                            data[rowIndex][columnIndex] = cell.getNumericCellValue() + "";
-                        }
-                    }
-                    case CellType.BOOLEAN -> data[rowIndex][columnIndex] = cell.getBooleanCellValue() + "";
-                    case CellType.FORMULA -> data[rowIndex][columnIndex] = cell.getCellFormula();
-                    default -> data[rowIndex][columnIndex] = " ";
-                }
-            });
-        });
-
-        System.out.println("Last valid row: " + getIdOfLastRowWithData(data));
-
-        PrettyPrinter.prettyTable(Arrays.copyOf(data, data.length), 14);
-    }
-
-    public TreeMap<ZonedDateTime,Row> getDateMap() {
-        XSSFSheet sheet = workbook.getSheetAt(0);
-        int lastRowNum = getRealLastRowNum(sheet);
-        int cols = sheet.getRow(0).getLastCellNum();
-
-        TreeMap<ZonedDateTime, Row> dateTimeRowMap = new TreeMap<>();
-
-        for (int rowID = 0; rowID < lastRowNum; rowID++) {
-            Row row = sheet.getRow(rowID);
-            if (row == null) continue;
+            int rowIndex = row.getRowNum();
 
             Cell dateCell = row.getCell(0);
-            if (Objects.requireNonNull(dateCell.getCellType()) != CellType.NUMERIC) continue;
-            if (!DateUtil.isCellDateFormatted(dateCell)) continue;
+            Cell startTimeCell = row.getCell(1);
+            Cell endTimeCell = row.getCell(2);
+            Cell personCell = row.getCell(3);
+            Cell timeCell = row.getCell(4);
+            LocalDate date = LocalDate.MIN;
+            LocalTime start = LocalTime.MIDNIGHT;
+            LocalTime end = LocalTime.MIDNIGHT;
+            String person = "";
 
-            LocalDateTime date = dateCell.getLocalDateTimeCellValue();
-            ZonedDateTime zonedDateTime = ZonedDateTime.of(date, ZoneId.of("Europe/Berlin"));
+            if (dateCell == null) return;
 
-            dateTimeRowMap.put(zonedDateTime, row);
-        }
+            try {
+                String dateString = cellDataFormatter.formatCellValue(dateCell);
 
-        return dateTimeRowMap;
+                date = LocalDate.parse(dateString, dateformatter);
+                start = startTimeCell.getLocalDateTimeCellValue().toLocalTime();
+                end = endTimeCell.getLocalDateTimeCellValue().toLocalTime();
+                if (personCell != null)
+                    person = personCell.getStringCellValue();
+
+                ExcelRow excelRow = new ExcelRow(rowIndex, date, start, end, person);
+                data[rowIndex] = excelRow;
+            } catch (Exception e) {
+                log.error("Could not parse: {} ({})", dateCell.toString(), e.toString());
+            }
+        });
+        return data;
+    }
+
+    public XSSFSheet getFirstSheet() {
+        return getSheet(0);
+    }
+
+    private XSSFSheet getSheet(int sheetIndex) {
+        return this.workbook.getSheetAt(sheetIndex);
+    }
+
+    public XSSFCellStyle readRowStyleAt(int rowIndex, XSSFSheet sheet) {
+        XSSFRow sourceRow = sheet.getRow(rowIndex);
+        return sourceRow.getRowStyle();
     }
 
     private static int getRealLastRowNum(Sheet sheet) {
@@ -128,11 +136,11 @@ public class ExcelReader {
         return copy;
     }
 
-    private static int getIdOfLastRowWithData(String[][] data) {
-        String[][] reversed = reverseArray(data);
+    private static int getIdOfLastRowWithData(ExcelRow[] data) {
+        ExcelRow[] reversed = reverseArray(data);
         for (int i = 0; i < reversed.length; i++) {
-            String[] row = reversed[i];
-            if (row[0] == null || row[0].isEmpty()) {
+            ExcelRow row = reversed[i];
+            if (row.date() == null || row.date() == LocalDate.MIN) {
                 return reversed.length - i;
             }
         }

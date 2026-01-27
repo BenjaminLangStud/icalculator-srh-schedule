@@ -44,7 +44,7 @@
             <AppenderRef ref="ConsoleAppender" />
             <AppenderRef ref="GUIFileAppender" />
         </Logger>
-        <Logger name="com.benny.icalculation.excel" level="debug" additivity="false">
+        <Logger name="com.example.benny.icalculation.excel" level="debug" additivity="false">
             <AppenderRef ref="ConsoleAppender" />
             <AppenderRef ref="ExcelFileAppender" />
         </Logger>
