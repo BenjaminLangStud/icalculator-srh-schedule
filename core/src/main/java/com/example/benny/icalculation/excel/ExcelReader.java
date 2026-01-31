@@ -3,7 +3,9 @@ package com.example.benny.icalculation.excel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +28,11 @@ public class ExcelReader {
     }
 
     public ExcelReader(File excelFile) throws IOException {
+        IOUtils.setByteArrayMaxOverride(500_000_000);
         this.workbook = null;
-        try (FileInputStream file = new FileInputStream(excelFile)) {
+        try (
+                FileInputStream file = new FileInputStream(excelFile);
+        ) {
             workbook = new XSSFWorkbook(file);
         }
     }
@@ -41,30 +46,34 @@ public class ExcelReader {
 
         log.info("Sheet: {}", sheet.getSheetName());
 
-        ExcelRow[] data = getInefficientRows(sheet);
+        List<ExcelRow> data = getInefficientRows(sheet);
+
+        log.info("Length: {}", data.size());
+
+        int numRowsNull = 0;
 
         for (ExcelRow row : data) {
+            if (row == null) numRowsNull++;
+            else numRowsNull = 0;
             System.out.println(row);
+            if (numRowsNull >= 3) break;
         }
     }
 
-    public ExcelRow[] getInefficientRows(XSSFSheet sheet) {
+    public List<ExcelRow> getInefficientRows(XSSFSheet sheet) {
         int lastRowNum = getRealLastRowNum(sheet);
         int columns = sheet.getRow(0).getLastCellNum();
 
         System.out.println("Last Row num: " + lastRowNum);
 
-        ExcelRow[] data = new ExcelRow[lastRowNum + 1];
+        List<ExcelRow> data = new ArrayList<>();
 
         Locale locale = Locale.GERMAN;
 
-        DataFormatter cellDataFormatter = new DataFormatter(locale);
-        DateTimeFormatter dateformatter = DateTimeFormatter.ofPattern("EEEE, d. MMMM yyyy", locale);
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm", locale);
+        Iterator<Row> rowIterator = sheet.rowIterator();
 
-        FormulaEvaluator formulaEvaluator = new XSSFFormulaEvaluator(workbook);
-
-        sheet.rowIterator().forEachRemaining(row -> {
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
             int rowIndex = row.getRowNum();
 
             Cell dateCell = row.getCell(0);
@@ -77,24 +86,50 @@ public class ExcelReader {
             LocalTime end = LocalTime.MIDNIGHT;
             String person = "";
 
-            if (dateCell == null) return;
+            if (dateCell == null) continue;
 
+            ExcelRow excelRow = null;
             try {
-                String dateString = cellDataFormatter.formatCellValue(dateCell);
-
-                date = LocalDate.parse(dateString, dateformatter);
-                start = startTimeCell.getLocalDateTimeCellValue().toLocalTime();
-                end = endTimeCell.getLocalDateTimeCellValue().toLocalTime();
-                if (personCell != null)
-                    person = personCell.getStringCellValue();
-
-                ExcelRow excelRow = new ExcelRow(rowIndex, date, start, end, person);
-                data[rowIndex] = excelRow;
+                excelRow = parseExcelRowFromCells(dateCell, startTimeCell, endTimeCell, personCell, rowIndex);
             } catch (Exception e) {
                 log.error("Could not parse: {} ({})", dateCell.toString(), e.toString());
             }
-        });
+            if (excelRow != null)
+                data.add(excelRow);
+        }
+
         return data;
+    }
+
+    private @Nullable ExcelRow parseExcelRowFromCells(Cell dateCell, Cell startTime, Cell endTime, Cell personCell, int rowIndex) {
+        Locale locale = Locale.ENGLISH;
+        DataFormatter cellDataFormatter = new DataFormatter(locale);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", locale);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm", locale);
+
+        String person = "";
+
+        String dateString = cellDataFormatter.formatCellValue(dateCell);
+
+        LocalDate date = null;
+        LocalTime start = null;
+        LocalTime end = null;
+        try {
+            date = parseDateFromString(dateString, dateFormatter);
+            start = startTime.getLocalDateTimeCellValue().toLocalTime();
+            end = endTime.getLocalDateTimeCellValue().toLocalTime();
+        } catch (Exception e) {
+            return null;
+        }
+
+        if (personCell != null) person = personCell.getStringCellValue();
+
+        return new ExcelRow(rowIndex, date, start, end, person);
+    }
+
+    private LocalDate parseDateFromString(String dateString, DateTimeFormatter formatter) {
+//        log.info("Trying to parse \"{}\"", dateString);
+        return LocalDate.parse(dateString, formatter);
     }
 
     public XSSFSheet getFirstSheet() {
