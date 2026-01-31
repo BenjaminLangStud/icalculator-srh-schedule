@@ -45,7 +45,7 @@ public class ExcelWriter {
     }
 
     static void main() throws IOException, InvalidFormatException {
-        IOUtils.setByteArrayMaxOverride(500_000_000);
+        IOUtils.setByteArrayMaxOverride(150_000_000);
 
         File excelFile = new File("test.xlsx");
         ZonedDateTime now = ZonedDateTime.now();
@@ -114,6 +114,25 @@ public class ExcelWriter {
         }
     }
 
+    private void addCommentToCell(Sheet sheet, Cell cell, String commentText) {
+        CreationHelper factory = this.workbook.getCreationHelper();
+
+        ClientAnchor anchor = factory.createClientAnchor();
+        Row row = cell.getRow();
+
+        anchor.setCol1(cell.getColumnIndex());
+        anchor.setCol2(cell.getColumnIndex() + 3);
+        anchor.setRow1(row.getRowNum());
+        anchor.setRow2(row.getRowNum() + 1);
+
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(commentText));
+        comment.setAuthor("Me");
+
+        cell.setCellComment(comment);
+    }
+
     private static int getWeekOfYearFromLocalDate(LocalDate date) {
         WeekFields weekFields = WeekFields.of(Locale.GERMANY);
         return date.get(weekFields.weekOfWeekBasedYear());
@@ -159,5 +178,7 @@ public class ExcelWriter {
         endCell.setCellStyle(startEndStyle);
 //        personCell.setCellStyle(personStyle);
         formulaCell.setCellStyle(formulaStyle);
+
+        addCommentToCell(sheet, dateCell, event.getSummary());
     }
 }

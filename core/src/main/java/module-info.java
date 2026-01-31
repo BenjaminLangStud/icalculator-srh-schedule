@@ -11,7 +11,6 @@ module com.example.benny.icalculation.core {
     requires org.apache.poi.ooxml;
     requires org.apache.poi.poi;
     requires org.apache.commons.lang3;
-    requires xlsx.streamer;
 
     opens com.example.benny.icalculation.gui to javafx.fxml;
 
