@@ -10,12 +10,12 @@ import java.util.List;
 
 public class LectureSorter {
 
-    List<LectureEvent> allLectureEvents;
-    List<LectureEvent> sortedLectureEvents = new ArrayList<>();
-    int monthMax = -1;
-    static ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
-    boolean ignoreOverlap = true;
-    boolean ignorePastLectures = true;
+    private final List<LectureEvent> allLectureEvents;
+    private final List<LectureEvent> sortedLectureEvents = new ArrayList<>();
+    private int monthMax = -1;
+    private static final ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
+    private boolean ignoreOverlap = true;
+    private boolean ignorePastLectures = true;
 
 
 
