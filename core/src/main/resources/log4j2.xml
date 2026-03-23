@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="basePath">${sys:user.home}/.srh-schedule-ical-app/applogs</Property>
+    </Properties>
+    <Appenders>
+
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5level %logger{15} - %msg%n" />
+        </Console>
+
+        <File name="ApplicationFileAppender" fileName="${basePath}/application_logs.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+        </File>
+
+        <File name="GUIFileAppender" fileName="${basePath}/gui_logs.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+        </File>
+        <File name="ExcelFileAppender" fileName="${basePath}/excel_logs.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+        </File>
+
+
+        <RollingFile name="RollingAppender"
+                        fileName="${basePath}/everything.log"
+                        filePattern="${basePath}/everything-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1MB" />
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="RollingAppender" />
+        </Root>
+
+        <Logger name="com.benny.icalculation.core" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="ApplicationFileAppender" />
+        </Logger>
+        <Logger name="com.benny.icalculation.gui" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="GUIFileAppender" />
+        </Logger>
+        <Logger name="com.example.benny.icalculation.excel" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="ExcelFileAppender" />
+        </Logger>
+    </Loggers>
+</Configuration>

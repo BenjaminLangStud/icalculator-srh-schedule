@@ -1,0 +1,113 @@
+package com.example.benny.icalculation.core.Caching;
+
+import com.example.benny.icalculation.core.Config;
+import com.example.benny.icalculation.core.FileDownloader;
+import com.example.benny.icalculation.core.exceptions.ConfigIncompleteException;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import com.example.benny.icalculation.core.Caching.CachedResponse;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+
+
+public class FileCacheService implements CacheService {
+    private static final Logger log = LogManager.getLogger(FileCacheService.class);
+
+    private final File cacheFile = Config.getAppDataDirectory().resolve("data_cache.srh-schedule").toFile();
+
+    CachedResponse deserialize(byte[] bytes) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
+        try (ObjectInput input = new ObjectInputStream(byteArrayInputStream)) {
+            Object obj = input.readObject();
+            return (CachedResponse) obj;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    byte[] serialize(final CachedResponse cachedResponse) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(cachedResponse);
+            out.flush();
+            return bos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets either the cached Data or fetches it
+     * @return The iCal data to use
+     */
+    public String getData() throws IOException, InterruptedException {
+        if (cacheFile.exists()) {
+            log.info("CacheFile exists");
+            CachedResponse cachedResponse = new CachedResponse();
+            boolean success = true;
+            try (FileInputStream inputStream = new FileInputStream(cacheFile)) {
+                byte[] bytes = inputStream.readAllBytes();
+                cachedResponse = deserialize(bytes);
+            } catch (FileNotFoundException fileNotFoundException) {
+                log.error(fileNotFoundException.getMessage());
+                success = false;
+            }
+
+            if (success && !isCacheExpired(cachedResponse.timestamp)) {
+                log.info("Loading from cache...");
+                return cachedResponse.content;
+            }
+        } else {
+            log.info("CacheFile doesn't exist");
+        }
+
+        return refreshCache();
+    }
+
+    boolean isCacheExpired(long timestamp) {
+        long invalidateAfterSeconds = Config.getInvalidateCacheAfterSeconds();
+        long expiryTimestamp = timestamp + invalidateAfterSeconds;
+        Duration expiredDuration = Duration.ofSeconds(Instant.now().getEpochSecond() - expiryTimestamp);
+        if (expiredDuration.getSeconds() > 0) {
+            log.debug("Cache expired for {} hours", expiredDuration.toHours());
+            return true;
+        }
+        log.debug("Cache remaining: {} hours", expiredDuration.toHours());
+        return false;
+    }
+
+    private String refreshCache() throws IOException, InterruptedException, IllegalArgumentException {
+        URL url = Config.getICalUri().toURL();
+        return refreshCache(url);
+    }
+    private String refreshCache(URL icalURL) throws IOException, InterruptedException {
+        log.debug("Cache expired. Fetching fresh data...");
+
+        String freshData = "";
+        try {
+            freshData = FileDownloader.getIcal(icalURL);
+        } catch (ConfigIncompleteException configIncompleteException) {
+            log.warn(configIncompleteException.getMessage());
+            throw new RuntimeException(configIncompleteException.getMessage());
+        } catch (URISyntaxException e) {
+            log.warn(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        CachedResponse newCache = new CachedResponse(freshData);
+
+        byte[] bytes = serialize(newCache);
+        try (FileOutputStream fileInputStream = new FileOutputStream(cacheFile)) {
+            fileInputStream.write(bytes);
+        }
+
+        return freshData;
+    }
+}
