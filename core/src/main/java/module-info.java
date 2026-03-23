@@ -16,4 +16,5 @@ module com.example.benny.icalculation.core {
 
     exports com.example.benny.icalculation.core;
     exports com.example.benny.icalculation.excel;
+    exports com.example.benny.icalculation.gui;
 }

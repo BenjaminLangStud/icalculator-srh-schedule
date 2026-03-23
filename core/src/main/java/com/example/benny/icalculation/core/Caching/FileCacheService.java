@@ -5,6 +5,7 @@ import com.example.benny.icalculation.core.FileDownloader;
 import com.example.benny.icalculation.core.exceptions.ConfigIncompleteException;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import com.example.benny.icalculation.core.Caching.CachedResponse;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -22,7 +23,8 @@ public class FileCacheService implements CacheService {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 
         try (ObjectInput input = new ObjectInputStream(byteArrayInputStream)) {
-            return (CachedResponse) input.readObject();
+            Object obj = input.readObject();
+            return (CachedResponse) obj;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

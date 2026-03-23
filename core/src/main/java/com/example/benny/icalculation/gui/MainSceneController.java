@@ -4,6 +4,7 @@ import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
 import com.example.benny.icalculation.core.Caching.FileCacheService;
 import com.example.benny.icalculation.core.Config;
+import com.example.benny.icalculation.core.FileDownloader;
 import com.example.benny.icalculation.core.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -211,13 +213,13 @@ public class MainSceneController {
             URL url = URI.create(urlInput.getText()).toURL();
             Config.setForceFetch(true);
             new FileCacheService().getData();
+            showLoadIcalFeedback("Success", false);
         } catch (MalformedURLException e) {
             showLoadIcalFeedback("Malformed URL", true);
         } catch (IOException | InterruptedException e) {
             showLoadIcalFeedback("Something went wrong", true);
         }
 
-        showLoadIcalFeedback("Success", false);
     }
 
     private void showLoadIcalFeedback(String message, boolean isBad) {

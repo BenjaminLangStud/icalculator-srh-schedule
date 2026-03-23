@@ -11,7 +11,9 @@ import org.apache.poi.xssf.usermodel.*;
 
 import java.io.*;
 import java.time.*;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.TemporalUnit;
 import java.time.temporal.WeekFields;
@@ -28,7 +30,7 @@ public class ExcelWriter {
     private CellStyle personStyle;
     private CellStyle formulaStyle;
 
-    public ExcelWriter(File excelFile, List<LectureEvent> events) throws IOException, InvalidFormatException {
+    public ExcelWriter(File excelFile) throws IOException, InvalidFormatException {
         this.workbook = null;
         log.info("Starting to load workbook...");
         long startTime = System.nanoTime();
@@ -55,23 +57,56 @@ public class ExcelWriter {
         LocalTime startTime = LocalTime.of(9, 30, 0);
         LocalTime endTime = LocalTime.of(17, 30, 0);
 
+        ZoneId zoneId = ZoneId.systemDefault();
+
+        ZonedDateTime yesterday = LocalDate.now().minusDays(1).atStartOfDay(zoneId);
+        ZonedDateTime today = LocalDate.now().atStartOfDay(zoneId);
+        ZonedDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay(zoneId);
+        ZonedDateTime nextWeek = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atStartOfDay(zoneId);
+
         LectureEvent nowEvent = new LectureEvent(
                 "Now",
-                LocalDate.now().atTime(startTime).atZone(ZoneId.systemDefault()),
-                LocalDate.now().atTime(endTime).atZone(ZoneId.systemDefault())
+                today.with(startTime),
+                today.with(endTime)
+        );
+        LectureEvent tomorrowEvent = new LectureEvent(
+                "Tomorrow",
+                tomorrow.with(startTime),
+                tomorrow.with(endTime)
+        );
+        LectureEvent yesterdayEvent = new LectureEvent(
+                "Yesterday",
+                yesterday.with(startTime),
+                yesterday.with(endTime)
         );
 
         LectureEvent nextWeekEvent = new LectureEvent(
                 "Next Week",
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTime(startTime).atZone(ZoneId.systemDefault()),
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTime(endTime).atZone(ZoneId.systemDefault())
+                nextWeek.with(startTime),
+                nextWeek.with(endTime)
         );
 
         events.add(nowEvent);
+        events.add(tomorrowEvent);
         events.add(nextWeekEvent);
+        events.add(yesterdayEvent);
 
-        ExcelWriter writer = new ExcelWriter(excelFile, events);
+        ExcelWriter writer = new ExcelWriter(excelFile);
         writer.appendToExcel(events);
+    }
+
+    public List<LectureEvent> stripLecturesAlreadyInExcelFile(List<LectureEvent> events, ExcelRow lastEventRow) {
+        Iterator<LectureEvent> eventIterator = events.iterator();
+        ZonedDateTime cutoffDate = lastEventRow.getDate().atStartOfDay(ZoneId.systemDefault());
+        while (eventIterator.hasNext()) {
+            LectureEvent event = eventIterator.next();
+
+            ZonedDateTime startDate = event.getStartDate();
+
+            if (startDate.isBefore(cutoffDate) || startDate.isEqual(cutoffDate))
+                eventIterator.remove();
+        }
+        return events;
     }
 
     public void appendToExcel(List<LectureEvent> events) throws IOException {
@@ -79,34 +114,39 @@ public class ExcelWriter {
         List<ExcelRow> rows = reader.getInefficientRows(sheet);
 
         ExcelRow latestRow = rows.getLast();
-        LocalDate latestLocalDate = latestRow.date();
-        ZonedDateTime latestDate = latestLocalDate.atStartOfDay(ZoneId.of("Europe/Berlin"));
+        LocalDate latestLocalDate = latestRow.getDate();
 
-        int nextLogicalRowId = latestRow.rowId() + 1;
+        events = stripLecturesAlreadyInExcelFile(events, latestRow);
+
+        int currentLogicalRowId = latestRow.getRowId();
 
         CreationHelper creationHelper = workbook.getCreationHelper();
         XSSFRow firstDataRow = sheet.getRow(1);
 
         Cell firstDateCell = firstDataRow.getCell(0);
-        System.out.println(firstDateCell.toString());
+        log.info("First date cell: {}", firstDateCell);
         dateStyle = firstDateCell.getCellStyle();
 
         Cell firstStartTimeCell = firstDataRow.getCell(1);
-        System.out.println(firstStartTimeCell);
+        log.info("First start time cell: {}", firstStartTimeCell);
         startEndStyle = firstStartTimeCell.getCellStyle();
 
         Cell firstFormulaCell = firstDataRow.getCell(4);
-        System.out.println(firstFormulaCell);
+        log.info("First formula cell: {}", firstFormulaCell);
         formulaStyle = firstFormulaCell.getCellStyle();
 
-//        this.dateStyle.setDataFormat(
-//                creationHelper.createDataFormat().getFormat("dd-mm-yyyy")
-//        );
-
+        int currentWeekOfYear = latestRow.getWeekOfYear();
 
         for (LectureEvent event : events) {
-            createNextRow(event, sheet, nextLogicalRowId);
-            nextLogicalRowId++;
+            currentLogicalRowId++;
+            ExcelRow excelRow = new ExcelRow(currentLogicalRowId, event);
+            if (excelRow.getWeekOfYear() > currentWeekOfYear) {
+                currentLogicalRowId++;
+                currentWeekOfYear = excelRow.getWeekOfYear();
+                excelRow.setRowId(excelRow.getRowId() + 1);
+            }
+            XSSFRow row = excelRow.writeRow(sheet);
+            addCommentToCell(sheet, row.getCell(0), event.getSummary());
         }
 
         try (FileOutputStream fileOutputStream = new FileOutputStream("test-out.xlsx")) {
@@ -131,54 +171,5 @@ public class ExcelWriter {
         comment.setAuthor("Me");
 
         cell.setCellComment(comment);
-    }
-
-    private static int getWeekOfYearFromLocalDate(LocalDate date) {
-        WeekFields weekFields = WeekFields.of(Locale.GERMANY);
-        return date.get(weekFields.weekOfWeekBasedYear());
-    }
-
-    private void createNextRow(LectureEvent event, XSSFSheet sheet, int logicalRowId) {
-        XSSFRow newRow = sheet.createRow(logicalRowId);
-
-        XSSFCellStyle lastCellStyle = reader.readRowStyleAt(logicalRowId - 1, sheet);
-        if (lastCellStyle != null)
-            log.info("Cell style: {}", lastCellStyle.getDataFormatString());
-        else
-            log.warn("Last cell style is null");
-
-        XSSFCell dateCell = newRow.createCell(0);
-        XSSFCell startCell = newRow.createCell(1);
-        XSSFCell endCell = newRow.createCell(2);
-        XSSFCell personCell = newRow.createCell(3);
-        XSSFCell formulaCell = newRow.createCell(4);
-
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss", Locale.GERMAN);
-        TemporalUnit unit = TimeUnit.SECONDS.toChronoUnit();
-
-        LocalTime localStartTime = event.getStartDate().toLocalTime().truncatedTo(unit);
-        LocalTime localEndTime = event.getEndDate().toLocalTime().truncatedTo(unit);
-
-        double excelStartTime = DateUtil.convertTime(localStartTime.toString());
-        double excelEndTime = DateUtil.convertTime(localEndTime.toString());
-
-        dateCell.setCellValue(event.getStartDate().toLocalDate());
-//        startCell.setCellValue(startTime);
-//        endCell.setCellValue(endTime);
-
-        startCell.setCellValue(excelStartTime);
-        endCell.setCellValue(excelEndTime);
-
-        int representableRowId = logicalRowId + 1;
-        String formula = "C" + representableRowId + "-B" + representableRowId;
-        formulaCell.setCellFormula(formula);
-
-        dateCell.setCellStyle(dateStyle);
-        startCell.setCellStyle(startEndStyle);
-        endCell.setCellStyle(startEndStyle);
-//        personCell.setCellStyle(personStyle);
-        formulaCell.setCellStyle(formulaStyle);
-
-        addCommentToCell(sheet, dateCell, event.getSummary());
     }
 }

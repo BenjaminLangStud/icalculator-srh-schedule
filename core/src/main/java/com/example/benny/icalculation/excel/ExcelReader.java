@@ -55,81 +55,37 @@ public class ExcelReader {
         for (ExcelRow row : data) {
             if (row == null) numRowsNull++;
             else numRowsNull = 0;
-            System.out.println(row);
+            log.debug(row);
             if (numRowsNull >= 3) break;
         }
     }
 
     public List<ExcelRow> getInefficientRows(XSSFSheet sheet) {
         int lastRowNum = getRealLastRowNum(sheet);
-        int columns = sheet.getRow(0).getLastCellNum();
 
-        System.out.println("Last Row num: " + lastRowNum);
+        log.info("Last Row num: {}", lastRowNum);
 
         List<ExcelRow> data = new ArrayList<>();
-
-        Locale locale = Locale.GERMAN;
-
         Iterator<Row> rowIterator = sheet.rowIterator();
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-            int rowIndex = row.getRowNum();
-
             Cell dateCell = row.getCell(0);
-            Cell startTimeCell = row.getCell(1);
-            Cell endTimeCell = row.getCell(2);
-            Cell personCell = row.getCell(3);
-            Cell timeCell = row.getCell(4);
-            LocalDate date = LocalDate.MIN;
-            LocalTime start = LocalTime.MIDNIGHT;
-            LocalTime end = LocalTime.MIDNIGHT;
-            String person = "";
 
             if (dateCell == null) continue;
 
             ExcelRow excelRow = null;
             try {
-                excelRow = parseExcelRowFromCells(dateCell, startTimeCell, endTimeCell, personCell, rowIndex);
+                excelRow = ExcelRow.readFromRow((XSSFRow) row);
             } catch (Exception e) {
                 log.error("Could not parse: {} ({})", dateCell.toString(), e.toString());
             }
+
             if (excelRow != null)
                 data.add(excelRow);
         }
 
         return data;
-    }
-
-    private @Nullable ExcelRow parseExcelRowFromCells(Cell dateCell, Cell startTime, Cell endTime, Cell personCell, int rowIndex) {
-        Locale locale = Locale.ENGLISH;
-        DataFormatter cellDataFormatter = new DataFormatter(locale);
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", locale);
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm", locale);
-
-        String person = "";
-
-        String dateString = cellDataFormatter.formatCellValue(dateCell);
-
-        LocalDate date = null;
-        LocalTime start = null;
-        LocalTime end = null;
-        try {
-            date = parseDateFromString(dateString, dateFormatter);
-            start = startTime.getLocalDateTimeCellValue().toLocalTime();
-            end = endTime.getLocalDateTimeCellValue().toLocalTime();
-        } catch (Exception e) {
-            return null;
-        }
-
-        if (personCell != null) person = personCell.getStringCellValue();
-
-        return new ExcelRow(rowIndex, date, start, end, person);
-    }
-
-    private LocalDate parseDateFromString(String dateString, DateTimeFormatter formatter) {
-//        log.info("Trying to parse \"{}\"", dateString);
-        return LocalDate.parse(dateString, formatter);
     }
 
     public XSSFSheet getFirstSheet() {
@@ -138,11 +94,6 @@ public class ExcelReader {
 
     private XSSFSheet getSheet(int sheetIndex) {
         return this.workbook.getSheetAt(sheetIndex);
-    }
-
-    public XSSFCellStyle readRowStyleAt(int rowIndex, XSSFSheet sheet) {
-        XSSFRow sourceRow = sheet.getRow(rowIndex);
-        return sourceRow.getRowStyle();
     }
 
     private static int getRealLastRowNum(Sheet sheet) {
@@ -169,21 +120,5 @@ public class ExcelReader {
             copy[copy.length - i - 1] = temp;
         }
         return copy;
-    }
-
-    private static int getIdOfLastRowWithData(ExcelRow[] data) {
-        ExcelRow[] reversed = reverseArray(data);
-        for (int i = 0; i < reversed.length; i++) {
-            ExcelRow row = reversed[i];
-            if (row.date() == null || row.date() == LocalDate.MIN) {
-                return reversed.length - i;
-            }
-        }
-        return 0;
-    }
-
-    private boolean isRowEmpty(Row row) {
-        int lastCellId = row.getLastCellNum() - 1;
-        return false;
     }
 }

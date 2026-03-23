@@ -43,3 +43,4 @@ applogs/
 out.txt
 app.config
 *.xlsx
+out/

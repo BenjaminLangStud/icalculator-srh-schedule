@@ -46,7 +46,6 @@ public class MainClass {
         new TxtWriter.Builder()
                 .lectureList(lectureEvents)
                 .ignorePast()
-                .stopAfter().february()
                 .build().writeToFile();
     }
 
