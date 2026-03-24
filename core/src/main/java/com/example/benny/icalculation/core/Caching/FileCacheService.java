@@ -25,8 +25,9 @@ public class FileCacheService implements CacheService {
         try (ObjectInput input = new ObjectInputStream(byteArrayInputStream)) {
             Object obj = input.readObject();
             return (CachedResponse) obj;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (ClassNotFoundException | InvalidClassException | StreamCorruptedException e) {
+            log.error(e);
+            return null;
         }
     }
 
