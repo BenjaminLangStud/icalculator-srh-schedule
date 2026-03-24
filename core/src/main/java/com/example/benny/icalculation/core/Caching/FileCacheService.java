@@ -6,6 +6,7 @@ import com.example.benny.icalculation.core.exceptions.ConfigIncompleteException;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.example.benny.icalculation.core.Caching.CachedResponse;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -19,18 +20,20 @@ public class FileCacheService implements CacheService {
 
     private final File cacheFile = Config.getAppDataDirectory().resolve("data_cache.srh-schedule").toFile();
 
+    @Nullable
     CachedResponse deserialize(byte[] bytes) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 
         try (ObjectInput input = new ObjectInputStream(byteArrayInputStream)) {
             Object obj = input.readObject();
             return (CachedResponse) obj;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (ClassNotFoundException | InvalidClassException | StreamCorruptedException e) {
+            log.error(e);
+            return null;
         }
     }
 
-    byte[] serialize(final CachedResponse cachedResponse) {
+    byte @Nullable [] serialize(final CachedResponse cachedResponse) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
@@ -39,7 +42,8 @@ public class FileCacheService implements CacheService {
             out.flush();
             return bos.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e);
+            return null;
         }
     }
 
@@ -55,6 +59,7 @@ public class FileCacheService implements CacheService {
             try (FileInputStream inputStream = new FileInputStream(cacheFile)) {
                 byte[] bytes = inputStream.readAllBytes();
                 cachedResponse = deserialize(bytes);
+                if (cachedResponse == null) success = false;
             } catch (FileNotFoundException fileNotFoundException) {
                 log.error(fileNotFoundException.getMessage());
                 success = false;
