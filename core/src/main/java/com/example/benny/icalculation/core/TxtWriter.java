@@ -13,11 +13,12 @@ import java.util.List;
 
 public class TxtWriter {
     private static final Logger log = LogManager.getLogger(TxtWriter.class);
-    List<LectureEvent> lectureEventList;
+    private List<LectureEvent> lectureEventList;
     public List<LectureEvent> lecturesToUse = new ArrayList<>();
-    boolean ignorePastLectures;
-    boolean ignoreOverlap;
-    int monthMax;
+    private boolean ignorePastLectures;
+    private boolean ignoreOverlap;
+    private int monthMax;
+    private String[] lectures_to_exclude;
 
     /**
      * @param lectureEventList The lectures for which to create the report
@@ -41,7 +42,7 @@ public class TxtWriter {
      */
     public boolean prepare() {
 
-        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures);
+        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures, this.lectures_to_exclude);
 
         this.lecturesToUse = lectureSorter.sort();
         return !this.lecturesToUse.isEmpty();

@@ -13,21 +13,25 @@ class LectureEventTest {
     String summary;
     ZonedDateTime dtStart, dtEnd;
     LectureEvent event;
+    LectureEvent overlappingEvent;
+    LectureEvent seperateEvent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         dtStart = ZonedDateTime.of(2025, 12, 22, 11, 53, 0, 0, ZoneId.of("Europe/Berlin"));
         dtEnd = dtStart.plusHours(2);
         summary = "Summary";
 
         event = new LectureEvent(summary, dtStart, dtEnd);
+        overlappingEvent = new LectureEvent(summary, dtStart.plusMinutes(5), dtEnd.minusMinutes(2));
+        seperateEvent = new LectureEvent(summary, dtStart.plusYears(5), dtEnd.plusYears(5));
     }
 
     @org.junit.jupiter.api.Test
     void getDurationAsString() {
-        LectureEvent event = new LectureEvent(summary, dtStart, dtEnd);
+        LectureEvent lectureEvent = new LectureEvent(summary, dtStart, dtEnd);
 
-        String resultString = event.getDurationAsString();
+        String resultString = lectureEvent.getDurationAsString();
 
         assertEquals("2 hours and 0 minutes", resultString);
     }
@@ -35,13 +39,14 @@ class LectureEventTest {
     @Test
     @DisplayName("Format date")
     void formatDate() {
-//        ZonedDateTime date = ZonedDateTime.of(2025, 12, 22, 11, 53, 0, 0, ZoneId.of("Europe/Berlin"));
-//
-//        assertEquals("22.12.2025 11:53", LectureEvent.formatDate(date));
+        ZonedDateTime date = ZonedDateTime.of(2025, 12, 22, 11, 53, 0, 0, ZoneId.of("Europe/Berlin"));
+
+        assertEquals("22.12.2025 11:53", LectureEvent.formatDate(date));
     }
 
     @Test
     void getSummary() {
+        assertEquals(summary, event.getSummary());
     }
 
     @Test
@@ -55,6 +60,7 @@ class LectureEventTest {
 
     @Test
     void getStartDate() {
+        assertEquals(dtStart, event.getStartDate());
     }
 
     @Test
@@ -70,6 +76,7 @@ class LectureEventTest {
 
     @Test
     void getEndDate() {
+        assertEquals(dtEnd, event.getEndDate());
     }
 
     @Test
@@ -112,28 +119,16 @@ class LectureEventTest {
 
     @Test
     void testFormatDate() {
-//        String resultString = LectureEvent.formatDate(dtStart);
-//        assertEquals("22.12.2025 11:53", resultString);
+        String resultString = LectureEvent.formatDate(dtStart);
+        assertEquals("22.12.2025 11:53", resultString);
     }
 
     @Test
     void testToString() {
-//        String expectedString = "LectureEvent{summary='Summary', startDate='22.12.2025 11:53', endDate='22.12.2025 13:53', duration='2 hours and 0 minutes'}";
-//        String resultString = event.toString();
-//
-//        assertEquals(expectedString, resultString);
-    }
+        String expectedString = "LectureEvent{summary='Summary', startDate='22.12.2025 11:53', endDate='22.12.2025 13:53', duration='2 hours and 0 minutes'}";
+        String resultString = event.toString();
 
-    @Test
-    void testGetSummary() {
-    }
-
-    @Test
-    void testSetSummary() {
-    }
-
-    @Test
-    void testSetStartDate() {
+        assertEquals(expectedString, resultString);
     }
 
     @Test
@@ -148,10 +143,19 @@ class LectureEventTest {
     }
 
     @Test
-    void testSetEndDate() {
+    void compareTo() {
+        assertNotEquals(0, event.compareTo(overlappingEvent));
     }
 
     @Test
-    void testGetDuration() {
+    void isOverlapping() {
+        assertTrue(event.isOverlapping(overlappingEvent));
+        assertFalse(overlappingEvent.isOverlapping(seperateEvent));
+    }
+
+    @Test
+    void isLongerThan() {
+        assertTrue(event.isLongerThan(overlappingEvent));
+        assertFalse(seperateEvent.isLongerThan(event));
     }
 }

@@ -8,18 +8,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class FileDownloader {
+    private FileDownloader() {}
+
 
     public static String getIcal() throws IOException, InterruptedException, URISyntaxException {
         return getIcal(Config.iCalUri.toURL());
     }
     public static String getIcal(URL url) throws IOException, InterruptedException, URISyntaxException {
-        HttpClient client = HttpClient.newHttpClient();
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(url.toURI())
+                    .build();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url.toURI())
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        }
     }
 }

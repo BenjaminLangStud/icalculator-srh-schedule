@@ -16,14 +16,16 @@ public class LectureSorter {
     private static final ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
     private boolean ignoreOverlap = true;
     private boolean ignorePastLectures = true;
+    private String[] ignoredLecutres;
 
 
 
-    public LectureSorter(List<LectureEvent> lectures, int monthMax, boolean ignoreOverlap, boolean ignorePastLectures) {
+    public LectureSorter(List<LectureEvent> lectures, int monthMax, boolean ignoreOverlap, boolean ignorePastLectures, String[] ignoredLecutres) {
         this.allLectureEvents = lectures;
         this.monthMax = monthMax;
         this.ignoreOverlap = ignoreOverlap;
         this.ignorePastLectures = ignorePastLectures;
+        this.ignoredLecutres = ignoredLecutres;
     }
 
     public List<LectureEvent> sort() {
