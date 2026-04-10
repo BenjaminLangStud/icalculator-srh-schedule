@@ -54,7 +54,7 @@ public class Config {
     public static String outputFile = "out.txt";
 
     static boolean forceFetch = false;
-    static long INVALIDATE_CACHE_AFTER_SECONDS = 3600;
+    static long INVALIDATE_CACHE_AFTER_SECONDS = 7200; // 7200s = 2h
 
     static Properties properties;
 
@@ -98,7 +98,7 @@ public class Config {
         try (FileOutputStream fos = new FileOutputStream(configFile.toString(), false)) {
             properties.store(fos, null);
         } catch (IOException fnex) {
-            System.err.println(fnex.getMessage());
+            log.error(fnex);
         }
     }
 

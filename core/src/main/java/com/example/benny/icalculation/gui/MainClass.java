@@ -1,6 +1,7 @@
 package com.example.benny.icalculation.gui;
 
 import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -22,12 +23,12 @@ public class MainClass extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         FXMLLoader fxmlLoader = new FXMLLoader(MainClass.class.getResource("mainScene.fxml"));
 
         final int sceneWidth = 800;
-        final int sceneHeight = 400;
+        final int sceneHeight = 450;
         Scene scene = new Scene(fxmlLoader.load(), sceneWidth, sceneHeight);
 
         primaryStage.setTitle("iCalculator GUI");

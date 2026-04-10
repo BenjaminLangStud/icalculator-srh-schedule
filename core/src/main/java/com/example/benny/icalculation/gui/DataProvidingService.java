@@ -16,13 +16,43 @@ import java.util.List;
 
 public class DataProvidingService extends Service<String> {
     private static final Logger log = LogManager.getLogger(DataProvidingService.class);
+    private List<LectureEvent> lectureEvents;
 
     boolean ignorePast = false;
     int stopAfterMonth = -5;
+    List<String> ignoredLectures;
 
-    public DataProvidingService(boolean ignorePast, int stopAfterMonth) {
+    public boolean isIgnorePast() {
+        return ignorePast;
+    }
+
+    public void setIgnorePast(boolean ignorePast) {
+        this.ignorePast = ignorePast;
+    }
+
+    public int getStopAfterMonth() {
+        return stopAfterMonth;
+    }
+
+    public void setStopAfterMonth(int stopAfterMonth) {
+        this.stopAfterMonth = stopAfterMonth;
+    }
+
+    public List<String> getIgnoredLectures() {
+        return ignoredLectures;
+    }
+
+    public void setIgnoredLectures(List<String> ignoredLectures) {
+        this.ignoredLectures = ignoredLectures;
+    }
+
+    public DataProvidingService() {}
+
+    public DataProvidingService(boolean ignorePast, int stopAfterMonth, List<String> ignoredLectures, List<LectureEvent> lectureEvents) {
         this.ignorePast = ignorePast;
         this.stopAfterMonth = stopAfterMonth;
+        this.ignoredLectures = ignoredLectures;
+        this.lectureEvents = lectureEvents;
     }
 
     @Override
@@ -30,27 +60,22 @@ public class DataProvidingService extends Service<String> {
         return new Task<String>() {
             @Override
             protected String call() throws Exception {
+                if (lectureEvents.isEmpty()) {
+                    updateMessage("Error");
+                    return "";
+                }
+
                 updateMessage("Loading...");
 
-                String formatted = null;
-                try {
-                    List<LectureEvent> lectureEvents = MainClass.loadFromICal();
-                    Collections.sort(lectureEvents);
+                StringBuilder formatted = new StringBuilder();
 
-
-                    TxtWriter writer = new TxtWriter(lectureEvents, ignorePast, stopAfterMonth, true);
-                    writer.prepare();
-                    formatted = TxtFormatter.formatEvents(writer.lecturesToUse);
-                } catch (ParserException | IOException | InterruptedException e) {
-                    formatted = "";
-                    updateMessage("Error!");
-                    log.error(e.getMessage());
-                    return formatted;
-                }
+                TxtWriter writer = new TxtWriter(lectureEvents, ignorePast, stopAfterMonth, true, ignoredLectures);
+                writer.prepare();
+                formatted.append(TxtFormatter.formatEvents(writer.lecturesToUse));
 
                 updateMessage("Done!");
 
-                return formatted;
+                return formatted.toString();
             }
         };
     }
