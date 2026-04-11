@@ -4,12 +4,13 @@ import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
 import com.example.benny.icalculation.core.Caching.FileCacheService;
 import com.example.benny.icalculation.core.Config;
-import com.example.benny.icalculation.core.FileDownloader;
+import com.example.benny.icalculation.core.LectureEvent;
 import com.example.benny.icalculation.core.exceptions.ConfigIncompleteException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -18,34 +19,37 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.controlsfx.control.CheckComboBox;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 public class MainSceneController {
     private static final Logger log = LogManager.getLogger(MainSceneController.class);
     Stage thisStage;
 
-    public void setThisStage(Stage stage) { this.thisStage = stage; }
+    private List<LectureEvent> lectureEvents;
 
     private ToggleGroup outputToggleGroup;
+    private CheckComboBox<String> ignoredEventsComboBox = new CheckComboBox<String>();
 
     enum outputTypes {
         saveToFile,
@@ -79,9 +83,11 @@ public class MainSceneController {
     @FXML
     private Button themeToggleButton;
 
+    @FXML
+    private GridPane optionsGrid;
 
     void checkUIConfigs() {
-        if (!(Config.getICalUri().compareTo(URI.create(urlInput.getText())) == 0)) {
+        if (Config.getICalUri().compareTo(URI.create(urlInput.getText())) != 0) {
             if (urlInput.getText().isBlank()) return;
 
             log.info("A new URL has been provided via UI");
@@ -92,7 +98,7 @@ public class MainSceneController {
             final URL url;
             try {
                 url = uri.toURL();
-            } catch (MalformedURLException malformedURLException) {
+            } catch (MalformedURLException _) {
                 log.error("URL malformed");
                 return;
             }
@@ -113,19 +119,75 @@ public class MainSceneController {
         }
     }
 
-    @FXML
-    private void generateTextBtnListener() {
+    private void loadLectures() {
+        DataFetchingService fetchingService = new DataFetchingService();
 
-        outputTypes outputType = (outputTypes) outputToggleGroup.getSelectedToggle().getUserData();
+        generateTextBtn.disableProperty().unbind();
+        generateTextBtn.disableProperty().bind(fetchingService.runningProperty());
+
+        fetchingService.setOnSucceeded(event -> {
+            generateTextLabel.textProperty().unbind();
+            generateTextLabel.textProperty().set("Loading...");
+            this.lectureEvents = fetchingService.getValue();
+            generateTextLabel.textProperty().set("Loaded successfully");
+            generateTextBtn.disableProperty().unbind();
+            generateTextBtn.setDisable(false);
+            generateTextBtn.setText("Generate Output");
+
+            populateIgnoreLessonsList(this.lectureEvents);
+        });
+
+        log.info("Starting fetching service...");
+        fetchingService.start();
+    }
+
+    private void populateIgnoreLessonsList(List<LectureEvent> lectureEvents) {
+        ignoredEventsComboBox.setDisable(false);
+        ObservableList<String> items = ignoredEventsComboBox.getItems();
+
+        items.clear();
+
+        lectureEvents.forEach(lectureEvent -> {
+            if (!items.contains(lectureEvent.getSummary())) {
+                String eventSummary = lectureEvent.getSummary();
+                items.add(eventSummary);
+                int position = items.indexOf(eventSummary);
+                log.info("Added '{}' to the summaries list at position {}.", eventSummary, position);
+            }
+        });
+
+        ignoredEventsComboBox.setShowCheckedCount(
+                ignoredEventsComboBox.getCheckModel().getItemCount() > 0
+        );
+        ignoredEventsComboBox.getCheckModel().checkAll();
+
+    }
+
+    private void outputLectures() {
+        if (this.lectureEvents == null) {
+            throw new IllegalStateException("DataFetchingService has to be called first!");
+        }
+
+        if (this.lectureEvents.isEmpty()) {
+            log.warn("outputLectures called with no lectures!");
+            return;
+        }
 
         checkUIConfigs();
+        outputTypes outputType = (outputTypes) outputToggleGroup.getSelectedToggle().getUserData();
 
         int stopAfterMonth = getMonthFromSelector();
         boolean ignorePast = ignorePastCheckBox.isSelected();
+        List<String> ignoredLectures = new ArrayList<>();
+
+        ObservableList<String> allItems = ignoredEventsComboBox.getItems();
+        ObservableList<String> checkedItems = ignoredEventsComboBox.getCheckModel().getCheckedItems();
+        ignoredLectures.addAll(CollectionUtils.removeAll(allItems, checkedItems));
 
         log.info("Setting up DataProvider with: stopAfterMonth: {} and ignorePast: {}", stopAfterMonth, ignorePast);
+        log.info("Not including lectures: {}", ignoredLectures);
 
-        DataProvidingService service = new DataProvidingService(ignorePast, stopAfterMonth);
+        DataProvidingService service = new DataProvidingService(ignorePast, stopAfterMonth, ignoredLectures, this.lectureEvents);
 
         generateTextLabel.textProperty().bind(service.messageProperty());
 
@@ -181,6 +243,15 @@ public class MainSceneController {
         service.start();
     }
 
+    @FXML
+    private void generateTextBtnListener() {
+        if (this.lectureEvents == null || this.lectureEvents.isEmpty()) {
+            loadLectures();
+        } else {
+            outputLectures();
+        }
+    }
+
     void showConfirmDialog(String message, String submessage) {
         final Stage dialog = new Stage();
         dialog.setTitle("Success!");
@@ -188,8 +259,6 @@ public class MainSceneController {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(MainSceneController.class.getResource("confirmDialog.fxml")));
             loader.setControllerFactory(_ -> new DialogController(message, submessage));
             Parent root = loader.load();
-//            DialogController controller = loader.getController();
-//            controller.setMessage(message, submessage);
             Scene scene = new Scene(root, 300, 200);
             dialog.setScene(scene);
 
@@ -262,11 +331,9 @@ public class MainSceneController {
 
     @FXML
     public void initialize() {
-
         setupDataProvider();
 
         generateTextBtn.onActionProperty().addListener(_ -> log.info("Generate btn was clicked!"));
-//        generateTextBtn.onActionProperty().addListener(_ -> generateTextBtnListener());
 
         radioButtonSaveFile.setSelected(true);
 
@@ -285,8 +352,13 @@ public class MainSceneController {
 
         makeInputDeselectable(urlInput);
 
+        ignoredEventsComboBox.setTitle("Select Events");
+        ignoredEventsComboBox.setDisable(true);
+
+        optionsGrid.add(ignoredEventsComboBox, 1, 4);
+
         urlInput.focusedProperty().addListener((arg0, oldValue, newValue) -> {
-            if (newValue) return;
+            if (Boolean.TRUE.equals(newValue)) return;
             checkForURIInputValidity();
         });
 

@@ -65,7 +65,7 @@ public class LectureEvent implements Comparable<LectureEvent> {
     Duration duration;
 
     /**
-     * @return A human readable representation of this lectures duration in the form
+     * @return A human-readable representation of this lectures duration in the form
      * <pre>
      * {hours} hours and {minutes} minutes
      * </pre>
@@ -103,12 +103,24 @@ public class LectureEvent implements Comparable<LectureEvent> {
     }
 
     @Override
+    public int hashCode() {
+        return this.getStartDate().hashCode() * this.getEndDate().hashCode() * this.getSummary().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof LectureEvent other)) return false;
+        return this.getStartDate().isEqual(other.getStartDate()) && this.getEndDate().isEqual(other.getEndDate()) && this.getSummary().equals(other.getSummary());
+    }
+
+    @Override
     public int compareTo(LectureEvent other) {
         return getStartDate().compareTo(other.getStartDate());
     }
 
     public boolean isOverlapping(LectureEvent other) {
-        return this.startDate.isBefore(other.getEndDate()) && startDate.isBefore(this.getEndDate());
+        return this.getStartDate().isBefore(other.getEndDate()) && other.getStartDate().isBefore(this.getEndDate());
     }
 
     public boolean isLongerThan(LectureEvent other) {

@@ -10,14 +10,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TxtWriter {
     private static final Logger log = LogManager.getLogger(TxtWriter.class);
-    List<LectureEvent> lectureEventList;
+    private List<LectureEvent> lectureEventList;
     public List<LectureEvent> lecturesToUse = new ArrayList<>();
-    boolean ignorePastLectures;
-    boolean ignoreOverlap;
-    int monthMax;
+    private boolean ignorePastLectures;
+    private boolean ignoreOverlap;
+    private int monthMax;
+    private List<String> ignoredLectures;
 
     /**
      * @param lectureEventList The lectures for which to create the report
@@ -28,12 +30,14 @@ public class TxtWriter {
             List<LectureEvent> lectureEventList,
             boolean ignorePastLectures,
             int monthMax,
-            boolean ignoreOverlap
+            boolean ignoreOverlap,
+            List<String> ignoredLectures
     ) {
         this.lectureEventList = lectureEventList;
         this.ignorePastLectures = ignorePastLectures;
         this.monthMax = monthMax;
         this.ignoreOverlap = ignoreOverlap;
+        this.ignoredLectures = ignoredLectures;
     }
 
     /**
@@ -41,7 +45,7 @@ public class TxtWriter {
      */
     public boolean prepare() {
 
-        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures);
+        LectureSorter lectureSorter = new LectureSorter(this.lectureEventList, this.monthMax, this.ignoreOverlap, this.ignorePastLectures, this.ignoredLectures);
 
         this.lecturesToUse = lectureSorter.sort();
         return !this.lecturesToUse.isEmpty();
@@ -68,9 +72,9 @@ public class TxtWriter {
             String toWrite = TxtFormatter.formatEvents(lecturesToUse);
 
             writer.write(toWrite);
-            System.out.println("Written output to file " + outFile + ".");
+            log.info("Written output to file {}.", outFile);
         } catch (IOException ioException) {
-            System.err.println(ioException.getMessage());
+            log.error(ioException);
         }
     }
 
@@ -79,6 +83,7 @@ public class TxtWriter {
         boolean ignorePastLectures = false;
         int monthMax = -1;
         boolean ignoreOverlap = false;
+        List<String> ignoredLectures = new ArrayList<>();
 
         public Builder lectureList(List<LectureEvent> lectureEventList) {
             this.lectureEventList = lectureEventList;
@@ -87,6 +92,11 @@ public class TxtWriter {
 
         public Builder ignorePast() {
             this.ignorePastLectures = true;
+            return this;
+        }
+
+        public Builder ignoredLectures(List<String> ignoredLectures) {
+            this.ignoredLectures = Stream.concat(this.ignoredLectures.stream(), ignoredLectures.stream()).toList();
             return this;
         }
 
@@ -106,7 +116,7 @@ public class TxtWriter {
         public Builder ignoreOverlap() { this.ignoreOverlap = true; return this; }
 
         public TxtWriter build() {
-            return new TxtWriter(lectureEventList, ignorePastLectures, monthMax, ignoreOverlap);
+            return new TxtWriter(lectureEventList, ignorePastLectures, monthMax, ignoreOverlap, ignoredLectures);
         }
 
         public static class MonthSelector {

@@ -5,6 +5,7 @@ import com.example.benny.icalculation.core.LectureEvent;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -16,14 +17,16 @@ public class LectureSorter {
     private static final ZonedDateTime today = new Date().toInstant().atZone(ZoneId.systemDefault());
     private boolean ignoreOverlap = true;
     private boolean ignorePastLectures = true;
+    private List<String> ignoredLecutres;
 
 
 
-    public LectureSorter(List<LectureEvent> lectures, int monthMax, boolean ignoreOverlap, boolean ignorePastLectures) {
+    public LectureSorter(List<LectureEvent> lectures, int monthMax, boolean ignoreOverlap, boolean ignorePastLectures, List<String> ignoredLecutres) {
         this.allLectureEvents = lectures;
         this.monthMax = monthMax;
         this.ignoreOverlap = ignoreOverlap;
         this.ignorePastLectures = ignorePastLectures;
+        this.ignoredLecutres = ignoredLecutres;
     }
 
     public List<LectureEvent> sort() {
@@ -36,8 +39,6 @@ public class LectureSorter {
         if (monthMax < 1) {
             monthMax = biggestValidMonth + 1;
         }
-
-//        System.out.println(this.allLectureEvents);
 
         for (LectureEvent lectureEvent : allLectureEvents) {
             if (shouldLectureBeIncluded(lectureEvent))
@@ -69,12 +70,15 @@ public class LectureSorter {
             this.sortedLectureEvents.removeLast();
         }
 
-        if (ignorePastLectures && startDate.isBefore(today))
+        if (!ignoredLecutres.isEmpty() && ignoredLecutres.contains(lectureEvent.getSummary())) {
             return false;
+        }
+
+        //noinspection RedundantIfStatement
+        if (ignorePastLectures && startDate.isBefore(today)) {
+            return false;
+        }
 
         return true;
-    }
-
-    public void overlapPriority(LectureEvent firstLecture, LectureEvent secondLecture) {
     }
 }
