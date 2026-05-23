@@ -58,6 +58,14 @@
             </dependency>
             <!-- >>> end of logging -->
 
+            <!-- Source: https://mvnrepository.com/artifact/de.siegmar/fastcsv -->
+            <dependency>
+                <groupId>de.siegmar</groupId>
+                <artifactId>fastcsv</artifactId>
+                <version>4.2.0</version>
+                <scope>compile</scope>
+            </dependency>
+
             <!-- https://mvnrepository.com/artifact/org.mnode.ical4j/ical4j -->
             <dependency>
                 <groupId>org.mnode.ical4j</groupId>

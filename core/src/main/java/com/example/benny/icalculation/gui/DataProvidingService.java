@@ -59,10 +59,11 @@ public class DataProvidingService extends Service<String> {
     protected Task<String> createTask() {
         return new Task<String>() {
             @Override
-            protected String call() throws Exception {
+            protected String call() {
                 if (lectureEvents.isEmpty()) {
-                    updateMessage("Error");
-                    return "";
+                    updateMessage("Error: Events not loaded");
+                    log.warn("Lecture Events are empty");
+                    return null;
                 }
 
                 updateMessage("Loading...");
@@ -74,6 +75,7 @@ public class DataProvidingService extends Service<String> {
                 formatted.append(TxtFormatter.formatEvents(writer.lecturesToUse));
 
                 updateMessage("Done!");
+                log.info("Event formatting done");
 
                 return formatted.toString();
             }

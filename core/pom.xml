@@ -110,6 +110,10 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.siegmar</groupId>
+            <artifactId>fastcsv</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -126,7 +130,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>core.icalculation.com.example.benny.MainClass</mainClass>
+                            <mainClass>com.example.benny.icalculation.gui.Launcher</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -140,13 +144,13 @@
                             <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifest>
-                                    <mainClass>core.icalculation.com.example.benny.MainClass</mainClass>
+                                    <mainClass>com.example.benny.icalculation.gui.Launcher</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>${project.artifactId}.${project.version}</finalName>
+                            <finalName>${project.name}.${project.version}</finalName>
                         </configuration>
                         <phase>package</phase>
                         <goals>

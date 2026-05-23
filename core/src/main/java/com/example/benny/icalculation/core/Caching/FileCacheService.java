@@ -76,6 +76,22 @@ public class FileCacheService implements CacheService {
         return refreshCache();
     }
 
+    /**
+     * Refreshes the cache. (duh)
+     * @return true when the refresh was successful
+     */
+    public boolean refresh() {
+        try {
+            refreshCache();
+            return true;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } catch (InterruptedException _) {
+            Thread.currentThread().interrupt();
+        }
+        return false;
+    }
+
     boolean isCacheExpired(long timestamp) {
         long invalidateAfterSeconds = Config.getInvalidateCacheAfterSeconds();
         long expiryTimestamp = timestamp + invalidateAfterSeconds;
@@ -100,7 +116,7 @@ public class FileCacheService implements CacheService {
             freshData = FileDownloader.getIcal(icalURL);
         } catch (ConfigIncompleteException configIncompleteException) {
             log.warn(configIncompleteException.getMessage());
-            throw new RuntimeException(configIncompleteException.getMessage());
+            throw configIncompleteException;
         } catch (URISyntaxException e) {
             log.warn(e.getMessage());
             throw new RuntimeException(e);
@@ -109,6 +125,8 @@ public class FileCacheService implements CacheService {
         CachedResponse newCache = new CachedResponse(freshData);
 
         byte[] bytes = serialize(newCache);
+        if (bytes == null)
+            throw new IOException("Data serialisation failed");
         try (FileOutputStream fileInputStream = new FileOutputStream(cacheFile)) {
             fileInputStream.write(bytes);
         }

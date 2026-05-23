@@ -19,9 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -271,22 +269,13 @@ public class MainSceneController {
     }
 
     @FXML
-    private void loadIcalButtonListener() {
+    private void refreshCacheButtonListener() {
 
-        if (urlInput.getText().isBlank()) {
-            showLoadIcalFeedback("No URL has been provided", true);
-            return;
-        }
+        if (new FileCacheService().refresh()) {
+            showLoadIcalFeedback("Cache refreshed", false);
+        } else {
+            showLoadIcalFeedback("An Error occurred", true);
 
-        try {
-            URL url = URI.create(urlInput.getText()).toURL();
-            Config.setForceFetch(true);
-            new FileCacheService().getData();
-            showLoadIcalFeedback("Success", false);
-        } catch (MalformedURLException e) {
-            showLoadIcalFeedback("Malformed URL", true);
-        } catch (IOException | InterruptedException e) {
-            showLoadIcalFeedback("Something went wrong", true);
         }
 
     }

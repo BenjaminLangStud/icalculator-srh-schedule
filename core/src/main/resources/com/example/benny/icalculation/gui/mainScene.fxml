@@ -15,7 +15,7 @@
          <children>
             <AnchorPane VBox.vgrow="NEVER">
                <children>
-                  <Button mnemonicParsing="false" onAction="#loadIcalButtonListener" text="Load iCal" />
+                  <Button mnemonicParsing="false" onAction="#refreshCacheButtonListener" text="Refresh Cache" />
                   <Label fx:id="loadIcalFeedbackText" alignment="CENTER" layoutY="38.0" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <font>
                         <Font name="JetBrains Mono Regular" size="12.0" />
