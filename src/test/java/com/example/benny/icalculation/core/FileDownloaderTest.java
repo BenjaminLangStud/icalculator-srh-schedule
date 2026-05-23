@@ -1,4 +1,4 @@
-package java.com.example.benny.icalculation.core;
+package com.example.benny.icalculation.core;
 
 import com.example.benny.icalculation.core.FileDownloader;
 import org.junit.jupiter.api.Test;

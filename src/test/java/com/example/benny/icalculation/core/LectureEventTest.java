@@ -1,4 +1,4 @@
-package java.com.example.benny.icalculation.core;
+package com.example.benny.icalculation.core;
 
 import java.lang.reflect.Field;
 import java.time.Duration;

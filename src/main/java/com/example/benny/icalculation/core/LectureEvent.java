@@ -86,7 +86,7 @@ public class LectureEvent implements Comparable<LectureEvent> {
      * @param date Date to format. Preferably as {@code ZonedDateTime}, because that is the only one tested.
      * @return the human-readable representation of the date
      */
-    protected static String formatDate(ZonedDateTime date) {
+    public static String formatDate(ZonedDateTime date) {
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
         return df.format(java.util.Date.from(date.toInstant()));
