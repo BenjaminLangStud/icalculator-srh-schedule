@@ -7,6 +7,8 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.example.benny.icalculation.core.LectureEvent;
 import org.junit.jupiter.api.*;
 
 class LectureEventTest {
