@@ -1,5 +1,6 @@
-package com.example.benny.icalculation.core;
+package java.com.example.benny.icalculation.core;
 
+import com.example.benny.icalculation.core.Config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

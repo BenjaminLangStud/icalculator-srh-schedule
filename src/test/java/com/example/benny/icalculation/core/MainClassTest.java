@@ -1,5 +1,6 @@
-package com.example.benny.icalculation.core;
+package java.com.example.benny.icalculation.core;
 
+import com.example.benny.icalculation.core.MainClass;
 import net.fortuna.ical4j.model.component.VEvent;
 import org.junit.jupiter.api.Test;
 

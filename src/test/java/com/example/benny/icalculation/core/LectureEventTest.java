@@ -1,4 +1,4 @@
-package com.example.benny.icalculation.core;
+package java.com.example.benny.icalculation.core;
 
 import java.lang.reflect.Field;
 import java.time.Duration;
@@ -7,6 +7,8 @@ import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.example.benny.icalculation.core.LectureEvent;
 import org.junit.jupiter.api.*;
 
 class LectureEventTest {
