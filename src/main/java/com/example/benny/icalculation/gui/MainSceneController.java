@@ -37,6 +37,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
@@ -263,6 +265,30 @@ public class MainSceneController {
             dialog.initModality(Modality.WINDOW_MODAL);
             dialog.show();
 
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    @FXML
+    private void additionalSettingsButtonPress() {
+        showAdditionalSettingsDialog();
+    }
+
+    private void showAdditionalSettingsDialog() {
+        final Stage dialog = new Stage();
+        dialog.setTitle("Settings");
+        try {
+            URL url = MainSceneController.class.getResource("confirmDialog.fxml");
+            log.info(url.toString());
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(MainSceneController.class.getResource("additionalSettingsDialog.fxml")));
+            loader.setControllerFactory(_ -> new SettingsDialogController());
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 300, 200);
+            dialog.setScene(scene);
+
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.show();
         } catch (IOException e) {
             log.error(e.getMessage());
         }

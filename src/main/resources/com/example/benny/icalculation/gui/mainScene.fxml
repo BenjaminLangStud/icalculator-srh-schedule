@@ -65,6 +65,7 @@
                       <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
                         <Label text="Stop after month" GridPane.rowIndex="1" />
@@ -90,6 +91,7 @@
                            </padding>
                         </VBox>
                         <Label layoutX="10.0" layoutY="172.0" text="Included Lectures" GridPane.rowIndex="4" />
+                        <Button mnemonicParsing="false" onAction="#additionalSettingsButtonPress" text="Additional Settings" GridPane.halignment="CENTER" GridPane.rowIndex="5" GridPane.valignment="CENTER" />
                      </children>
                   </GridPane>
                </content>
